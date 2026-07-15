@@ -41,6 +41,10 @@
     "./mcp": {
       "types": "./dist/mcp/server.d.ts",
       "default": "./dist/mcp/server.js"
+    },
+    "./embedders": {
+      "types": "./dist/embedders/index.d.ts",
+      "default": "./dist/embedders/index.js"
     }
   },
   "bin": {
@@ -67,6 +71,14 @@
   },
   "optionalDependencies": {
     "sqlite-vec": "^0.1.7-alpha.2"
+  },
+  "peerDependencies": {
+    "@huggingface/transformers": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@huggingface/transformers": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

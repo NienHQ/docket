@@ -224,6 +224,25 @@ CREATE TABLE IF NOT EXISTS parse_cache (
 `);
     },
   },
+  {
+    to: 4,
+    up: (db) => {
+      // embeddings keyed per (chunk, model) so vectors from different
+      // embedders coexist; search already filters by model
+      db.exec(`
+CREATE TABLE embeddings_v4 (
+  chunk_id TEXT NOT NULL REFERENCES chunks(chunk_id),
+  model    TEXT NOT NULL,
+  dim      INTEGER NOT NULL,
+  vector   BLOB NOT NULL,
+  PRIMARY KEY (chunk_id, model)
+);
+INSERT INTO embeddings_v4 SELECT chunk_id, model, dim, vector FROM embeddings;
+DROP TABLE embeddings;
+ALTER TABLE embeddings_v4 RENAME TO embeddings;
+`);
+    },
+  },
 ];
 
 const LAST_MIGRATION = MIGRATIONS[MIGRATIONS.length - 1];

@@ -222,6 +222,69 @@ export class SqliteIndexer implements Indexer {
   }
 
   /**
+   * Fill missing embeddings for the configured embedder's model from stored
+   * chunks, without re-chunking. Input composition matches writeChunks
+   * (context + "\n" + text) so reembedded vectors equal ingest-time vectors.
+   * Returns the number of chunks embedded.
+   *
+   * Schema note: embeddings keys chunk_id as its sole PRIMARY KEY, so a chunk
+   * holds one vector total, not one per model. Switching models therefore
+   * REPLACES the previous model's row for each chunk (search filters by
+   * model, so replaced rows simply stop matching the old model). True
+   * multi-model coexistence needs a PK of (chunk_id, model), a schema
+   * migration out of scope here.
+   */
+  async reembedAll(): Promise<number> {
+    const embedder = this.embedder;
+    if (!embedder) {
+      throw new Error(
+        "docket: reembed requires an embedder; open the directory with DocketOptions.embedder set",
+      );
+    }
+
+    const db = this.dbh.db;
+    const rows = db
+      .prepare(
+        "SELECT c.chunk_id, c.context, c.text FROM chunks c" +
+          " WHERE NOT EXISTS (SELECT 1 FROM embeddings e" +
+          " WHERE e.chunk_id = c.chunk_id AND e.model = ?)" +
+          " ORDER BY c.chunk_id",
+      )
+      .all(embedder.model) as Array<{ chunk_id: string; context: string; text: string }>;
+    if (rows.length === 0) return 0;
+
+    // PK is (chunk_id, model) since schema v4: models coexist side by side
+    const insEmb = db.prepare(
+      "INSERT OR IGNORE INTO embeddings (chunk_id, model, dim, vector) VALUES (?,?,?,?)",
+    );
+    const insertBatch = db.transaction(
+      (batch: typeof rows, vectors: Float32Array[]) => {
+        batch.forEach((row, i) => {
+          const vec = vectors[i];
+          if (!vec) throw new Error(`embedder returned no vector for ${row.chunk_id}`);
+          insEmb.run(
+            row.chunk_id,
+            embedder.model,
+            embedder.dim,
+            Buffer.from(vec.buffer, vec.byteOffset, vec.byteLength),
+          );
+        });
+      },
+    );
+
+    const BATCH = 64;
+    for (let i = 0; i < rows.length; i += BATCH) {
+      const batch = rows.slice(i, i + BATCH);
+      // await outside the transaction: better-sqlite3 transactions are sync
+      const vectors = await embedder.embed(
+        batch.map((r) => r.context + "\n" + r.text),
+      );
+      insertBatch(batch, vectors);
+    }
+    return rows.length;
+  }
+
+  /**
    * Delete-then-insert keeps reindexing idempotent (spec invariant 3). Scope
    * is the blob for message chunks (an RFC822 blob belongs to one message)
    * and (blob, message) for attachment chunks (blobs are deduplicated).

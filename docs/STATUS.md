@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 2.2 embedder adapters (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,17 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-15 - task 2.2 done: embedder adapters + reembed
+
+- src/embedders/ subpath: OpenAiEmbedder (fetch-based, batching, 429/5xx
+  retry with Retry-After, tested against a local mock server) and
+  LocalEmbedder (transformers.js via optional peer dep, lazy import,
+  real-model test env-flagged behind DOCKET_LOCAL_EMBEDDER=1).
+- dk.reembed() fills missing vectors for the configured model from
+  stored chunk text, no re-chunk/re-parse. Schema v4 re-keys embeddings
+  to PK (chunk_id, model) so models coexist side by side (needed for the
+  M3 ablation work). Suite: 96 tests + 1 env-flagged skip.
 
 ## 2026-07-15 - task 2.1 done: attachment parsers + PDF text
 

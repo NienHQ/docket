@@ -117,6 +117,16 @@ export class Docket {
     return new Docket(dbx, ingestor, indexer, store, facts, entities, tools);
   }
 
+  /**
+   * Fill missing embeddings for the configured embedder's model from stored
+   * chunk text and context, without re-chunking or re-parsing. Switching
+   * models is reembed(), not reindex(). Other models' rows are left alone.
+   */
+  async reembed(): Promise<{ embedded: number }> {
+    if (this.dbx.readonly) readonlyThrow();
+    return { embedded: await this.indexer.reembedAll() };
+  }
+
   /** Wipe all derived state and rebuild it from evidence (spec invariant 3). */
   async reindex(): Promise<void> {
     if (this.dbx.readonly) readonlyThrow();
