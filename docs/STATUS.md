@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 1.7 npm release prep (claimed 2026-07-15; publish itself blocked on npm auth)
 
 ## Blocked
 
