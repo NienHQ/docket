@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { DocketDb } from "../db.js";
 import type { BlobHash, EvidenceStore, Ingestor, IngestResult, MessageId } from "../types.js";
 import { parseEml } from "./eml.js";
-import { rethreadAll } from "./jwz.js";
+import { rethreadAll, rethreadIncremental } from "./jwz.js";
 import { splitMbox } from "./mbox.js";
 import { stripFragments } from "./strip.js";
 
@@ -36,7 +36,7 @@ export class SqliteIngestor implements Ingestor {
 
   async emlBytes(bytes: Uint8Array): Promise<IngestResult> {
     const out = await this.insertOne(bytes);
-    if (out.fresh) this.rethreadAll();
+    if (out.fresh) rethreadIncremental(this.dk.db, out.messageId);
     return this.finalize(out);
   }
 

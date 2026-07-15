@@ -6,13 +6,22 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 1.2 incremental threading (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
   -s workflow (interactive). Workflow YAML is otherwise ready to write.
+
+## 2026-07-15 - task 1.2 done: incremental threading
+
+- Single-message ingest now runs rethreadIncremental: BFS over the header id
+  graph plus thread and subject closure, recomputing only the affected
+  cluster. rethreadAll stays as the reindex fallback and the test oracle.
+- tests/threading.test.ts: property test (6 seeded shuffles, oracle equality
+  after every prefix) plus bridge, late-parent re-root, and subject-fallback
+  merge cases. Suite: 54 tests.
 
 ## 2026-07-15 - v0.1 core built
 
