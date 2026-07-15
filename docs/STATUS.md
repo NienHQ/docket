@@ -6,7 +6,13 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 1.2 incremental threading (claimed 2026-07-15)
+
+## Blocked
+
+- 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
+  scope on the local gh token. Unblock with: gh auth refresh -h github.com
+  -s workflow (interactive). Workflow YAML is otherwise ready to write.
 
 ## 2026-07-15 - v0.1 core built
 
