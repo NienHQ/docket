@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 3.1 fact extraction pipeline (claimed 2026-07-16)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,19 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-16 - task 3.1 done: fact extraction pipeline
+
+- dk.extractFacts (optional batch job, never in ingest): deterministic
+  thread rendering with inline chunk ids, caller-supplied complete(),
+  strict validation before any assert (grounding in the source chunk,
+  entity grounding, date/relation shape; 7 reject reasons), rejects and
+  runs audited in fact_extract_rejects / fact_extract_runs (schema v6),
+  state-hash skip on re-runs, duplicate-safe under version bumps.
+- Done criterion met: on the bench fixture, extraction + asOf answers
+  all 4 temporal questions (4/4), matching the e2e's regex path, with
+  every answering fact resolving to a source chunk containing the
+  value. Suite: 128 tests + 1 skip.
 
 ## 2026-07-15 - task 2.5 done: thread-context expansion (MILESTONE 2 COMPLETE)
 

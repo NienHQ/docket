@@ -261,6 +261,34 @@ CREATE TABLE IF NOT EXISTS context_cache (
 `);
     },
   },
+  {
+    to: 6,
+    up: (db) => {
+      // fact extraction audit surface: every run and every rejection is
+      // recorded; assertions themselves land in facts with source chunks
+      db.exec(`
+CREATE TABLE IF NOT EXISTS fact_extract_runs (
+  thread_id    TEXT NOT NULL,
+  tool_version TEXT NOT NULL,
+  thread_hash  TEXT NOT NULL,             -- state hash: re-runs skip unchanged threads
+  at           TEXT NOT NULL,
+  proposed     INTEGER NOT NULL,
+  asserted     INTEGER NOT NULL,
+  rejected     INTEGER NOT NULL,
+  PRIMARY KEY (thread_id, tool_version, thread_hash)
+);
+
+CREATE TABLE IF NOT EXISTS fact_extract_rejects (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  at           TEXT NOT NULL,
+  thread_id    TEXT NOT NULL,
+  tool_version TEXT NOT NULL,
+  reason       TEXT NOT NULL,
+  payload_json TEXT NOT NULL DEFAULT '{}'
+);
+`);
+    },
+  },
 ];
 
 const LAST_MIGRATION = MIGRATIONS[MIGRATIONS.length - 1];

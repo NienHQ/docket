@@ -168,6 +168,19 @@ before asserting, which is the correct behavior for out-of-order archives.
 Every fact must carry a source: a chunk id or message id. Facts without
 provenance are rejected.
 
+**LLM fact extraction** (`extractFacts`, strictly optional, never in the
+ingest path): a batch job iterates threads, feeds each thread's stripped new
+text (chunk ids inline) to a caller-supplied `complete()` with a fixed
+prompt, and expects a JSON array of proposals `{entity, relation, value,
+validFrom, sourceChunk}`. Validation before any assert: the source chunk must
+exist and contain the value string (case-insensitive grounding), the entity
+must be grounded (a known party id, or a string present in the source chunk
+or thread text), validFrom must parse as an ISO date, relation must be
+non-empty. Valid proposals backfill in event-time order; invalid ones land in
+`fact_extract_rejects` and are never asserted. Runs are recorded per
+(thread, tool version, thread state hash) in `fact_extract_runs`, so re-runs
+skip unchanged threads and a version bump re-extracts everything.
+
 ### 3.5 Entities (`src/entities/`)
 
 Deterministic address book: `parties` (companies/people we care about) and

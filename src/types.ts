@@ -220,6 +220,41 @@ export interface FactLedger {
   history(entity: string, relation: string): FactRow[];
 }
 
+// -------------------------------------------------------- fact extraction
+
+/** What the extraction completion must emit, one JSON object per fact. */
+export interface ProposedFact {
+  entity: string;
+  relation: string;
+  value: string;
+  validFrom: string; // ISO date
+  sourceChunk: ChunkId;
+}
+
+export interface RejectedFact {
+  threadId: ThreadId;
+  reason: string;
+  proposal: unknown;
+}
+
+export interface ExtractOptions {
+  /** caller-supplied completion; no vendor SDK in the engine */
+  complete: (prompt: string) => Promise<string>;
+  /** extraction prompt/tool version; bump to re-run over unchanged threads */
+  version?: string;
+  /** restrict to specific threads (default: all) */
+  threads?: ThreadId[];
+  onReject?: (r: RejectedFact) => void;
+}
+
+export interface ExtractReport {
+  threads: number; // processed this run
+  skipped: number; // unchanged under the same version
+  proposed: number;
+  asserted: number;
+  rejected: number;
+}
+
 // ------------------------------------------------------------------ entities
 
 export interface Party {

@@ -10,6 +10,8 @@ import { SqliteTools } from "./tools.js";
 import type {
   BatchOptions,
   DocketOptions,
+  ExtractOptions,
+  ExtractReport,
   Entities,
   EvidenceStore,
   FactLedger,
@@ -115,6 +117,18 @@ export class Docket {
     const entities = new SqliteEntities(dbx);
     const tools = new SqliteTools(dbx, indexer, entities);
     return new Docket(dbx, ingestor, indexer, store, facts, entities, tools);
+  }
+
+  /**
+   * Optional LLM fact extraction (spec 3.4): batch job over threads, never
+   * part of ingest. Proposals are validated (grounded in their source chunk,
+   * parseable dates) before entering the ledger; rejects are logged to
+   * fact_extract_rejects, and unchanged threads are skipped on re-runs.
+   */
+  async extractFacts(opts: ExtractOptions): Promise<ExtractReport> {
+    if (this.dbx.readonly) readonlyThrow();
+    const { SqliteFactExtractor } = await import("./extract/facts.js");
+    return new SqliteFactExtractor(this.dbx, this.facts).run(opts);
   }
 
   /**
