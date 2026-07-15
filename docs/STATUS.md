@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 2.4 near-duplicate suppression (claimed 2026-07-15)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
