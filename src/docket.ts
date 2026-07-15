@@ -8,6 +8,7 @@ import { SqliteFactLedger } from "./ledger/facts.js";
 import { SqliteEntities } from "./entities/entities.js";
 import { SqliteTools } from "./tools.js";
 import type {
+  BatchOptions,
   DocketOptions,
   Entities,
   EvidenceStore,
@@ -28,8 +29,8 @@ export class Docket {
   readonly ingest: {
     emlBytes(bytes: Uint8Array): Promise<IngestResult>;
     emlFile(path: string): Promise<IngestResult>;
-    mboxFile(path: string): Promise<IngestResult[]>;
-    dir(path: string): Promise<IngestResult[]>;
+    mboxFile(path: string, opts?: BatchOptions): Promise<IngestResult[]>;
+    dir(path: string, opts?: BatchOptions): Promise<IngestResult[]>;
   };
 
   private constructor(
@@ -56,13 +57,13 @@ export class Docket {
         await this.indexIngested([r]);
         return r;
       },
-      mboxFile: async (path) => {
-        const rs = await this.ingestor.mboxFile(path);
+      mboxFile: async (path, opts) => {
+        const rs = await this.ingestor.mboxFile(path, opts);
         await this.indexIngested(rs);
         return rs;
       },
-      dir: async (path) => {
-        const rs = await this.ingestor.dir(path);
+      dir: async (path, opts) => {
+        const rs = await this.ingestor.dir(path, opts);
         await this.indexIngested(rs);
         return rs;
       },

@@ -6,13 +6,26 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 1.3 ingest at scale (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
   -s workflow (interactive). Workflow YAML is otherwise ready to write.
+
+## 2026-07-15 - task 1.3 done: ingest at scale
+
+- BatchOptions (batchSize, onProgress) on mboxFile/dir: parse per batch,
+  then one write transaction per batch; parse errors skip the message
+  instead of sinking the batch (formal quarantine lands in 1.4).
+- scripts/perf.mjs: self-contained seeded corpus generator + measurement.
+  Recorded in docs/perf.md (Ryzen 9 9950X3D): 15k messages ingested in
+  62s (244 msg/s), search p50 25ms / p95 31ms, reindex 61s. Both plan
+  targets met. Known cost center: FTS maintenance dominates at scale.
+- tests/batch.test.ts: batched equals one-by-one, progress, idempotency,
+  poisoned member. Suite: 58 tests.
+- Weekly CI perf job deferred until 1.1 unblocks (gh workflow scope).
 
 ## 2026-07-15 - task 1.2 done: incremental threading
 

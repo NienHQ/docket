@@ -47,12 +47,19 @@ export interface IngestResult {
   fresh: boolean;
 }
 
+export interface BatchOptions {
+  /** messages per write transaction, default 500 */
+  batchSize?: number;
+  /** called after each committed batch */
+  onProgress?: (done: number, total: number) => void;
+}
+
 export interface Ingestor {
   emlBytes(bytes: Uint8Array): Promise<IngestResult>;
   emlFile(path: string): Promise<IngestResult>;
-  mboxFile(path: string): Promise<IngestResult[]>;
+  mboxFile(path: string, opts?: BatchOptions): Promise<IngestResult[]>;
   /** ingest every *.eml under a directory (recursive, sorted for determinism) */
-  dir(path: string): Promise<IngestResult[]>;
+  dir(path: string, opts?: BatchOptions): Promise<IngestResult[]>;
 }
 
 export type FragmentKind = "new" | "quote" | "signature";

@@ -1,7 +1,15 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { DocketDb } from "../db.js";
-import type { BlobHash, EvidenceStore, Ingestor, IngestResult, MessageId } from "../types.js";
+import type {
+  BatchOptions,
+  BlobHash,
+  EvidenceStore,
+  Ingestor,
+  IngestResult,
+  MessageId,
+} from "../types.js";
+import type { ParsedEmail } from "./eml.js";
 import { parseEml } from "./eml.js";
 import { rethreadAll, rethreadIncremental } from "./jwz.js";
 import { splitMbox } from "./mbox.js";
@@ -44,13 +52,13 @@ export class SqliteIngestor implements Ingestor {
     return this.emlBytes(new Uint8Array(readFileSync(path)));
   }
 
-  async mboxFile(path: string): Promise<IngestResult[]> {
-    return this.insertMany(splitMbox(new Uint8Array(readFileSync(path))));
+  async mboxFile(path: string, opts?: BatchOptions): Promise<IngestResult[]> {
+    return this.insertMany(splitMbox(new Uint8Array(readFileSync(path))), opts);
   }
 
-  async dir(path: string): Promise<IngestResult[]> {
+  async dir(path: string, opts?: BatchOptions): Promise<IngestResult[]> {
     const parts = collectEmlFiles(path).map((f) => new Uint8Array(readFileSync(f)));
-    return this.insertMany(parts);
+    return this.insertMany(parts, opts);
   }
 
   /** Recompute every thread assignment from headers stored in the database. */
@@ -77,16 +85,51 @@ export class SqliteIngestor implements Ingestor {
     })();
   }
 
-  private async insertMany(parts: Uint8Array[]): Promise<IngestResult[]> {
+  /**
+   * Batched bulk path: parse (async) happens outside the transaction, then a
+   * single write transaction per batch covers every per-message DB write.
+   * putBlob's own transaction becomes a savepoint inside the batch, so blob
+   * rows and message rows commit together.
+   */
+  private async insertMany(parts: Uint8Array[], opts?: BatchOptions): Promise<IngestResult[]> {
+    const batchSize = Math.max(1, opts?.batchSize ?? 500);
+    const total = parts.length;
     const outs: InsertOutcome[] = [];
-    for (const p of parts) outs.push(await this.insertOne(p));
+
+    const writeBatch = this.dk.db.transaction(
+      (batch: Array<{ bytes: Uint8Array; parsed: ParsedEmail }>): InsertOutcome[] => {
+        const res: InsertOutcome[] = [];
+        for (const item of batch) res.push(this.insertParsed(item.bytes, item.parsed));
+        return res;
+      },
+    );
+
+    for (let offset = 0; offset < total; offset += batchSize) {
+      const slice = parts.slice(offset, offset + batchSize);
+      const batch: Array<{ bytes: Uint8Array; parsed: ParsedEmail }> = [];
+      for (const bytes of slice) {
+        try {
+          batch.push({ bytes, parsed: await parseEml(bytes) });
+        } catch {
+          // unparseable input must not sink the batch; task 1.4 adds a
+          // quarantine table so these get recorded instead of skipped
+        }
+      }
+      outs.push(...writeBatch(batch));
+      opts?.onProgress?.(Math.min(offset + slice.length, total), total);
+    }
+
     if (outs.some((o) => o.fresh)) this.rethreadAll();
     return outs.map((o) => this.finalize(o));
   }
 
   private async insertOne(bytes: Uint8Array): Promise<InsertOutcome> {
+    return this.insertParsed(bytes, await parseEml(bytes));
+  }
+
+  /** Synchronous tail of ingestion: everything after MIME parsing. */
+  private insertParsed(bytes: Uint8Array, parsed: ParsedEmail): InsertOutcome {
     const db = this.dk.db;
-    const parsed = await parseEml(bytes);
     const blobHash = this.store.putBlob(bytes, {
       mime: "message/rfc822",
       source: { kind: "message", messageId: parsed.messageId },
