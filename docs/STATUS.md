@@ -6,13 +6,23 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 1.6 schema migrations (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
   -s workflow (interactive). Workflow YAML is otherwise ready to write.
+
+## 2026-07-15 - task 1.6 done: stepped schema migrations
+
+- schema.ts is now an append-only migration ledger: frozen v1 DDL, v2
+  adds ingest_errors, SCHEMA_VERSION computed from the last step. Each
+  step runs in its own transaction; databases newer than the build are
+  rejected on open. The append-only rule is documented above the array.
+- Committed v1 fixture db (30 KiB) + scripts/make-v1-fixture.mjs;
+  tests prove forward migration preserves data, schema parity with a
+  fresh v2 db, and end-to-end function after migration. Suite: 79 tests.
 
 ## 2026-07-15 - task 1.5 done: concurrency contract
 

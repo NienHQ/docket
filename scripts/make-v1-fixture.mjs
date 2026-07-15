@@ -1,17 +1,20 @@
 /**
- * Single source of DDL for the whole engine. Modules never issue CREATE
- * statements of their own.
+ * Regenerates the committed schema-version-1 fixture database at
+ * tests/fixtures/db-v1/docket.db.
  *
- * Two table classes (spec section 1): evidence tables are permanent,
- * derived tables (marked below) can be wiped and rebuilt by reindex().
+ * The committed binary is the artifact of record: migration tests run
+ * against that exact file, not against the output of this script. The
+ * script exists so the fixture can be audited and regenerated if it is
+ * ever lost. It inlines the frozen v1 DDL on purpose (a v1 database must
+ * look like what version-1 builds produced, independent of src/schema.ts).
+ *
+ * Run from the repo root: node scripts/make-v1-fixture.mjs
  */
-import type { Database } from "better-sqlite3";
+import { mkdirSync, rmSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import Database from "better-sqlite3";
 
-/**
- * Version 1 schema, frozen. This string is history: it is replayed verbatim
- * on every fresh database and must never be edited. Later schema changes go
- * in new migration steps below.
- */
 const DDL_V1 = `
 -- evidence: immutable content-addressed blobs
 CREATE TABLE IF NOT EXISTS blobs (
@@ -174,68 +177,73 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 `;
 
-/**
- * Stepped migrations, one entry per schema version.
- *
- * THE RULE (plan task 1.6): schema changes always append a new migration
- * step. Existing steps are frozen history and are never edited, reordered,
- * or removed. SCHEMA_VERSION moves only by appending a step. Any database
- * ever produced by a released build must migrate forward through these
- * exact steps, so editing an old step silently forks on-disk history.
- */
-const MIGRATIONS: ReadonlyArray<{ to: number; up: (db: Database) => void }> = [
-  {
-    to: 1,
-    up: (db) => {
-      db.exec(DDL_V1);
-    },
-  },
-  {
-    to: 2,
-    up: (db) => {
-      db.exec(`
--- quarantine: inputs that could not be ingested; raw bytes stay in the CAS
-CREATE TABLE IF NOT EXISTS ingest_errors (
-  id        INTEGER PRIMARY KEY AUTOINCREMENT,
-  at        TEXT NOT NULL,
-  blob_hash TEXT,                        -- null only when bytes could not be stored
-  reason    TEXT NOT NULL,               -- parse_error | degenerate | oversize
-  detail    TEXT NOT NULL DEFAULT ''
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const outDir = join(scriptDir, "..", "tests", "fixtures", "db-v1");
+const outPath = join(outDir, "docket.db");
+
+mkdirSync(outDir, { recursive: true });
+rmSync(outPath, { force: true });
+rmSync(outPath + "-wal", { force: true });
+rmSync(outPath + "-shm", { force: true });
+
+const db = new Database(outPath);
+// small page size keeps the committed binary tiny; it changes nothing about
+// schema semantics and migration must work regardless of page size
+db.pragma("page_size = 512");
+db.pragma("foreign_keys = ON");
+db.exec(DDL_V1);
+
+// Sample rows migration tests assert survive intact. Values are fixed and
+// referenced verbatim by tests/migrations.test.ts; do not change them
+// without regenerating expectations there.
+db.prepare(
+  "INSERT INTO parties (party_id, name, kind, notes) VALUES (?, ?, ?, ?)",
+).run("pty_acme", "Acme Corp", "company", "fixture party");
+
+db.prepare(
+  "INSERT INTO blobs (hash, size, mime, created_at, tombstoned) VALUES (?, ?, ?, ?, 0)",
+).run(
+  "a".repeat(64),
+  42,
+  "message/rfc822",
+  "2025-06-01T00:00:00.000Z",
 );
-`);
-    },
-  },
-];
 
-const LAST_MIGRATION = MIGRATIONS[MIGRATIONS.length - 1];
-if (LAST_MIGRATION === undefined) throw new Error("MIGRATIONS must not be empty");
+db.prepare(
+  `INSERT INTO messages
+     (message_id, blob_hash, thread_id, subject, from_name, from_address,
+      sent_at, in_reply_to, references_json, body_text)
+   VALUES (?, ?, ?, ?, ?, ?, ?, NULL, '[]', ?)`,
+).run(
+  "fixture-1@example.com",
+  "a".repeat(64),
+  "thr_fixture",
+  "Fixture subject",
+  "Fixture Sender",
+  "sender@example.com",
+  "2025-06-01T00:00:00.000Z",
+  "Fixture body text.",
+);
 
-export const SCHEMA_VERSION = LAST_MIGRATION.to;
+db.prepare(
+  `INSERT INTO facts
+     (entity, relation, value_json, valid_from, valid_to, created_at,
+      expired_at, source_chunk, source_message)
+   VALUES (?, ?, ?, ?, NULL, ?, NULL, NULL, ?)`,
+).run(
+  "pty_acme",
+  "payment_terms",
+  '"NET30"',
+  "2025-06-01",
+  "2025-06-01T00:00:00.000Z",
+  "fixture-1@example.com",
+);
 
-/**
- * Tables reindex() may wipe, children before parents so foreign keys hold.
- * Evidence tables are never in this list.
- */
-export const DERIVED_TABLES = [
-  "embeddings",
-  "chunks_fts",
-  "chunks",
-  "fragments",
-  "threads",
-] as const;
+db.prepare(
+  "INSERT INTO audit_log (at, action, subject, detail) VALUES (?, ?, ?, ?)",
+).run("2025-06-01T00:00:00.000Z", "fixture", "db-v1", "created by make-v1-fixture");
 
-export function migrate(db: Database): void {
-  const version = db.pragma("user_version", { simple: true }) as number;
-  if (version > SCHEMA_VERSION) {
-    throw new Error(
-      `database schema version ${version} is newer than this build (supports ${SCHEMA_VERSION})`,
-    );
-  }
-  for (const step of MIGRATIONS) {
-    if (step.to <= version) continue;
-    db.transaction(() => {
-      step.up(db);
-      db.pragma(`user_version = ${step.to}`);
-    })();
-  }
-}
+db.pragma("user_version = 1");
+db.close();
+
+console.log(`wrote ${outPath}`);
