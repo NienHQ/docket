@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 2.3 LLM contextualizer with cache (claimed 2026-07-15)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
