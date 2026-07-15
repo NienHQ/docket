@@ -1,12 +1,16 @@
+#!/usr/bin/env node
 /**
  * Stdio MCP server exposing one Docket directory to MCP clients.
- * Start: node dist/mcp/server.js --dir <path> [--write | --readonly]
+ * Start: docket-mcp --dir <path> [--write | --readonly]
+ * (or: node dist/mcp/server.js --dir <path> [--write | --readonly])
  *
  * The server opens the directory read-only by default (many readers may
  * coexist with one writer, per the concurrency contract in docs/spec.md
  * section 2). Pass --write to open a writer and register the fact and
  * entity write tools.
  */
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -235,13 +239,24 @@ export async function startServer(dir: string, opts: ServerOptions = {}): Promis
   await server.connect(transport);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Main-module check that survives npm bin symlinks: node realpaths the main
+// module (so import.meta.url is the real file) while argv[1] stays the symlink.
+function invokedAsMain(): boolean {
+  const argvPath = process.argv[1];
+  if (!argvPath) return false;
+  try {
+    return realpathSync(argvPath) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+}
+
+if (invokedAsMain()) {
   const argv = process.argv;
   const dirFlag = argv.indexOf("--dir");
   const write = argv.includes("--write");
   const readonlyFlag = argv.includes("--readonly"); // explicit no-op: readonly is the default
-  const usage =
-    "usage: node dist/mcp/server.js --dir <path> [--write | --readonly]";
+  const usage = "usage: docket-mcp --dir <path> [--write | --readonly]";
   if (dirFlag === -1 || !argv[dirFlag + 1] || (write && readonlyFlag)) {
     console.error(usage);
     process.exit(1);

@@ -10,6 +10,25 @@ in-process. No Docker sidecar, no cloud, no server.
 **Status: v0.1, early.** APIs will move. Built against
 [PaperTrail-Bench](https://github.com/NienHQ/papertrail-bench).
 
+## Install
+
+```sh
+pnpm add @nienhq/docket    # or: npm install @nienhq/docket
+```
+
+Not yet on npm: the first release is pending. Installing from a git
+checkout works today:
+
+```sh
+git clone https://github.com/NienHQ/docket && cd docket
+pnpm install && pnpm build && pnpm pack
+# then, in your project:
+pnpm add /path/to/docket/nienhq-docket-0.1.0.tgz
+```
+
+Requires Node >= 20. better-sqlite3 is a native dependency; prebuilt
+binaries cover common platforms, otherwise a C++ toolchain is needed.
+
 ## Why
 
 Engines in this space (RAGFlow, R2R) are Python services you deploy next to
@@ -81,11 +100,18 @@ const dk = await Docket.open(dir, { embedder: myEmbedder });
 
 ## MCP server
 
-Expose the same tools to any MCP client:
+The package ships a `docket-mcp` bin (stdio) exposing the same tools to any
+MCP client. It opens the directory read-only by default, so any number of
+servers can sit next to one writer process; pass `--write` to also register
+the fact and entity write tools:
 
 ```sh
-node dist/mcp/server.js --dir ./mail-archive
+docket-mcp --dir ./mail-archive           # read-only (default)
+docket-mcp --dir ./mail-archive --write   # adds docket_fact_assert, docket_entity_map
 ```
+
+From a git checkout, `node dist/mcp/server.js --dir ./mail-archive` is the
+same thing.
 
 ## Storage
 

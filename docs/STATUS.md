@@ -6,13 +6,26 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 1.7 npm release prep (claimed 2026-07-15; publish itself blocked on npm auth)
+(nothing claimed)
 
-## Blocked
+## Blocked (credentials, see docs/RELEASING.md)
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
   -s workflow (interactive). Workflow YAML is otherwise ready to write.
+- 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
+  Everything else is done and proven by pnpm verify:pack; publish is
+  npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-15 - task 1.7 prep done: publish-ready packaging
+
+- docket-mcp bin (shebang + symlink-safe main-module guard), exports map
+  verified, files audit, sideEffects false, keywords; CHANGELOG.md
+  (keep-a-changelog), docs/RELEASING.md runbook, README install section.
+- scripts/verify-pack.mjs proves it end to end: tarball is dist +
+  metadata only (37.3 KiB, 48 files), installs into a scratch project,
+  library smoke passes through the installed package, and the installed
+  bin serves MCP over stdio. Suite: 79 tests + verify:pack PASS.
 
 ## 2026-07-15 - task 1.6 done: stepped schema migrations
 

@@ -4,6 +4,25 @@
   "description": "Embeddable, local-first retrieval and memory engine for business correspondence. Immutable evidence store, JWZ threading, hybrid search, bi-temporal fact ledger. SQLite-first, no cloud dependency.",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "email",
+    "eml",
+    "mbox",
+    "retrieval",
+    "search",
+    "hybrid-search",
+    "bm25",
+    "fts5",
+    "sqlite",
+    "rag",
+    "mcp",
+    "memory",
+    "local-first",
+    "bitemporal",
+    "threading",
+    "provenance"
+  ],
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/NienHQ/docket.git"
@@ -24,14 +43,20 @@
       "default": "./dist/mcp/server.js"
     }
   },
+  "bin": {
+    "docket-mcp": "./dist/mcp/server.js"
+  },
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:pack": "node scripts/verify-pack.mjs",
+    "release": "node scripts/verify-pack.mjs && npm version minor --no-git-tag-version && node -e \"const v = require('./package.json').version; console.log('version bumped to ' + v + '. next steps (manual, see docs/RELEASING.md):'); console.log('  git commit -am v' + v); console.log('  git tag v' + v); console.log('  git push --follow-tags'); console.log('  npm publish --access public');\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
