@@ -1,0 +1,44 @@
+From: Yusuf Sato <yusuf.sato@meridianpackaging.example>
+To: Dev Garvey <dev.garvey@kestrelfabrication.example>
+Subject: Re: Purchase order PO-2024-0015 - aluminum sheet 2mm
+Date: Thu, 21 Mar 2024 09:00:00 +0000
+Message-ID: <MSG-000077@meridianpackaging.example>
+In-Reply-To: <MSG-000075@meridianpackaging.example>
+References: <MSG-000074@kestrelfabrication.example>
+ <MSG-000075@meridianpackaging.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000077"
+
+--=-PTB-MSG-000077
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Dev,
+
+Please find attached invoice INV-2024-0020 against PO-2024-0015 for $6,660.75.
+Payment is due by 2024-04-20 per our NET30 terms.
+
+Regards,
+Yusuf
+Meridian Packaging
+
+--=-PTB-MSG-000077
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="INV-2024-0020.txt"
+MIME-Version: 1.0
+
+INVOICE INV-2024-0020
+Date: 2024-03-21
+Party: Meridian Packaging
+
+Invoice number: INV-2024-0020
+Issuer: Meridian Packaging
+Bill to: Kestrel Fabrication
+Issue date: 2024-03-21
+Due date: 2024-04-20
+Terms: NET30
+Total: $6,660.75
+Po ref: PO-2024-0015
+
+--=-PTB-MSG-000077--

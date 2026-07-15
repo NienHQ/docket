@@ -1,0 +1,40 @@
+From: Grace Sato <grace.sato@eastportpackaging.example>
+To: Dev Garvey <dev.garvey@kestrelfabrication.example>
+Subject: Re: Purchase order PO-2024-0039 - conveyor rollers
+Date: Mon, 19 Aug 2024 09:07:00 +0000
+Message-ID: <MSG-000227@eastportpackaging.example>
+In-Reply-To: <MSG-000221@eastportpackaging.example>
+References: <MSG-000211@kestrelfabrication.example>
+ <MSG-000212@eastportpackaging.example> <MSG-000221@eastportpackaging.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000227"
+
+--=-PTB-MSG-000227
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Dev,
+
+We have issued credit note CN-2024-0005 for $45.14 against invoice INV-2024-0=
+054 (returned items).
+
+Best regards,
+Grace
+Eastport Packaging
+
+--=-PTB-MSG-000227
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="CN-2024-0005.txt"
+MIME-Version: 1.0
+
+CREDIT NOTE CN-2024-0005
+Date: 2024-08-19
+Party: Eastport Packaging
+
+Credit note number: CN-2024-0005
+Invoice ref: INV-2024-0054
+Amount: $45.14
+Reason: returned items
+
+--=-PTB-MSG-000227--

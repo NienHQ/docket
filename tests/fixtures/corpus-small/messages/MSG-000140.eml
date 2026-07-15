@@ -1,0 +1,39 @@
+From: Zoe Iverson <zoe.iverson@kestrelfabrication.example>
+To: Yusuf Sato <yusuf.sato@meridianpackaging.example>
+Subject: Purchase order PO-2024-0027 - aluminum sheet 2mm
+Date: Mon, 27 May 2024 09:07:00 +0000
+Message-ID: <MSG-000140@kestrelfabrication.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000140"
+
+--=-PTB-MSG-000140
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Yusuf,
+
+Please find attached purchase order PO-2024-0027 for 10 units of aluminum she=
+et 2mm at $88.81 per unit.
+The order total is $888.10.
+
+Best,
+Zoe
+Kestrel Fabrication
+
+--=-PTB-MSG-000140
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="PO-2024-0027.txt"
+MIME-Version: 1.0
+
+PURCHASE ORDER PO-2024-0027
+Date: 2024-05-27
+Party: Meridian Packaging
+
+Po number: PO-2024-0027
+Item: aluminum sheet 2mm
+Qty: 10
+Unit price: $88.81
+Total: $888.10
+
+--=-PTB-MSG-000140--

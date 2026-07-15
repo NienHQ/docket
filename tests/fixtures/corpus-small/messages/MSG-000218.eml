@@ -1,0 +1,47 @@
+From: Grace Sato <grace.sato@eastportpackaging.example>
+To: Dev Garvey <dev.garvey@kestrelfabrication.example>
+Subject: Re: Purchase order PO-2024-0042 - conveyor rollers
+Date: Thu, 15 Aug 2024 09:07:00 +0000
+Message-ID: <MSG-000218@eastportpackaging.example>
+In-Reply-To: <MSG-000210@kestrelfabrication.example>
+References: <MSG-000201@kestrelfabrication.example>
+ <MSG-000202@eastportpackaging.example>
+ <MSG-000207@kestrelfabrication.example>
+ <MSG-000210@kestrelfabrication.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000218"
+
+--=-PTB-MSG-000218
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Dev,
+
+Please find attached invoice INV-2024-0057 against PO-2024-0042-A2 for $1,830=
+.60.
+Payment is due by 2024-09-29 per our NET45 terms.
+
+Kind regards,
+Grace
+Eastport Packaging
+
+--=-PTB-MSG-000218
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="INV-2024-0057.txt"
+MIME-Version: 1.0
+
+INVOICE INV-2024-0057
+Date: 2024-08-15
+Party: Eastport Packaging
+
+Invoice number: INV-2024-0057
+Issuer: Eastport Packaging
+Bill to: Kestrel Fabrication
+Issue date: 2024-08-15
+Due date: 2024-09-29
+Terms: NET45
+Total: $1,830.60
+Po ref: PO-2024-0042-A2
+
+--=-PTB-MSG-000218--

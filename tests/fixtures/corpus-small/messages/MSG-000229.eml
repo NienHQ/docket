@@ -1,0 +1,42 @@
+From: Zoe Iverson <zoe.iverson@kestrelfabrication.example>
+To: Grace Sato <grace.sato@eastportpackaging.example>
+Subject: Re: Purchase order PO-2024-0041 - conveyor rollers
+Date: Tue, 20 Aug 2024 09:07:00 +0000
+Message-ID: <MSG-000229@kestrelfabrication.example>
+In-Reply-To: <MSG-000223@eastportpackaging.example>
+References: <MSG-000222@kestrelfabrication.example>
+ <MSG-000223@eastportpackaging.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000229"
+
+--=-PTB-MSG-000229
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello Grace,
+
+Please amend PO-2024-0041: quantity is now 45 units of conveyor rollers, revi=
+sed order total $457.65.
+The amended purchase order is attached as PO-2024-0041-A1.
+
+Thanks,
+Zoe
+Kestrel Fabrication
+
+--=-PTB-MSG-000229
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="PO-2024-0041-A1.txt"
+MIME-Version: 1.0
+
+PURCHASE ORDER PO-2024-0041-A1
+Date: 2024-08-20
+Party: Eastport Packaging
+
+Po number: PO-2024-0041
+Item: conveyor rollers
+Qty: 45
+Unit price: $10.17
+Total: $457.65
+
+--=-PTB-MSG-000229--

@@ -1,0 +1,41 @@
+From: Hugo Yates <hugo.yates@bluepineproperties.example>
+To: Iris Ellis <iris.ellis@kestrelfabrication.example>
+Subject: Re: Lease agreement LEASE-2024-001
+Date: Mon, 01 Jul 2024 09:00:00 +0000
+Message-ID: <MSG-000174@bluepineproperties.example>
+In-Reply-To: <MSG-000002@bluepineproperties.example>
+References: <MSG-000002@bluepineproperties.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000174"
+
+--=-PTB-MSG-000174
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello Iris,
+
+As per our review clause, monthly rent under lease LEASE-2024-001 is revised =
+to $1,860.28 effective 2024-07-01.
+The amendment document LEASE-2024-001-A1 is attached.
+
+Kind regards,
+Hugo
+Bluepine Properties
+
+--=-PTB-MSG-000174
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="LEASE-2024-001-A1.txt"
+MIME-Version: 1.0
+
+LEASE AGREEMENT LEASE-2024-001-A1
+Date: 2024-07-01
+Party: Bluepine Properties
+
+Lease number: LEASE-2024-001
+Monthly rent: $1,860.28
+Term months: 36
+Start date: 2024-01-02
+Amended date: 2024-07-01
+
+--=-PTB-MSG-000174--

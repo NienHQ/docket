@@ -1,0 +1,40 @@
+From: Ben Whitfield <ben.whitfield@kestrelfabrication.example>
+To: Ava Ueda <ava.ueda@umberwholesale.example>
+Subject: Invoice INV-2024-0046 from Kestrel Fabrication
+Date: Mon, 24 Jun 2024 09:00:00 +0000
+Message-ID: <MSG-000171@kestrelfabrication.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000171"
+
+--=-PTB-MSG-000171
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Dear Ava,
+
+Please find attached invoice INV-2024-0046 for $4,985.00.
+Payment is due by 2024-07-24 per our NET30 terms.
+
+Best,
+Ben
+Kestrel Fabrication
+
+--=-PTB-MSG-000171
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="INV-2024-0046.txt"
+MIME-Version: 1.0
+
+INVOICE INV-2024-0046
+Date: 2024-06-24
+Party: Umber Wholesale
+
+Invoice number: INV-2024-0046
+Issuer: Kestrel Fabrication
+Bill to: Umber Wholesale
+Issue date: 2024-06-24
+Due date: 2024-07-24
+Terms: NET30
+Total: $4,985.00
+
+--=-PTB-MSG-000171--

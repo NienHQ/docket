@@ -1,0 +1,39 @@
+From: Ben Whitfield <ben.whitfield@kestrelfabrication.example>
+To: Ava Ueda <ava.ueda@umberwholesale.example>
+Subject: Re: Invoice INV-2024-0008 from Kestrel Fabrication
+Date: Sun, 28 Jan 2024 09:00:00 +0000
+Message-ID: <MSG-000021@kestrelfabrication.example>
+In-Reply-To: <MSG-000011@kestrelfabrication.example>
+References: <MSG-000011@kestrelfabrication.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000021"
+
+--=-PTB-MSG-000021
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Ava,
+
+We have issued credit note CN-2024-0001 for $1,188.20 against invoice INV-202=
+4-0008 (pricing error).
+
+Best,
+Ben
+Kestrel Fabrication
+
+--=-PTB-MSG-000021
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="CN-2024-0001.txt"
+MIME-Version: 1.0
+
+CREDIT NOTE CN-2024-0001
+Date: 2024-01-28
+Party: Umber Wholesale
+
+Credit note number: CN-2024-0001
+Invoice ref: INV-2024-0008
+Amount: $1,188.20
+Reason: pricing error
+
+--=-PTB-MSG-000021--

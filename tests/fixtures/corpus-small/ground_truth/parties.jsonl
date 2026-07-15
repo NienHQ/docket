@@ -1,0 +1,5 @@
+{"domain": "kestrelfabrication.example", "is_self": true, "kind": "self", "name": "Kestrel Fabrication", "party_id": "PTY-0001"}
+{"domain": "eastportpackaging.example", "is_self": false, "kind": "vendor", "name": "Eastport Packaging", "party_id": "PTY-0002"}
+{"domain": "meridianpackaging.example", "is_self": false, "kind": "vendor", "name": "Meridian Packaging", "party_id": "PTY-0003"}
+{"domain": "umberwholesale.example", "is_self": false, "kind": "customer", "name": "Umber Wholesale", "party_id": "PTY-0004"}
+{"domain": "bluepineproperties.example", "is_self": false, "kind": "landlord", "name": "Bluepine Properties", "party_id": "PTY-0005"}

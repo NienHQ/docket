@@ -1,0 +1,40 @@
+From: Yusuf Sato <yusuf.sato@meridianpackaging.example>
+To: Dev Garvey <dev.garvey@kestrelfabrication.example>
+Subject: Re: Purchase order PO-2024-0037 - aluminum sheet 2mm
+Date: Fri, 26 Jul 2024 09:00:00 +0000
+Message-ID: <MSG-000199@meridianpackaging.example>
+In-Reply-To: <MSG-000193@meridianpackaging.example>
+References: <MSG-000183@kestrelfabrication.example>
+ <MSG-000184@meridianpackaging.example> <MSG-000193@meridianpackaging.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000199"
+
+--=-PTB-MSG-000199
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Dear Dev,
+
+We have issued credit note CN-2024-0004 for $1,310.30 against invoice INV-202=
+4-0050 (returned items).
+
+Thanks,
+Yusuf
+Meridian Packaging
+
+--=-PTB-MSG-000199
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="CN-2024-0004.txt"
+MIME-Version: 1.0
+
+CREDIT NOTE CN-2024-0004
+Date: 2024-07-26
+Party: Meridian Packaging
+
+Credit note number: CN-2024-0004
+Invoice ref: INV-2024-0050
+Amount: $1,310.30
+Reason: returned items
+
+--=-PTB-MSG-000199--

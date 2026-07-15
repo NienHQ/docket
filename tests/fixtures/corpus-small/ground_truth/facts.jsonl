@@ -1,0 +1,9 @@
+{"entity": "PTY-0004", "fact_id": "FCT-000001", "relation": "payment_terms", "source_event": "EVT-000005", "valid_from": "2024-01-02", "valid_to": null, "value": "NET30"}
+{"entity": "PTY-0005", "fact_id": "FCT-000002", "relation": "monthly_rent", "source_event": "EVT-000006", "valid_from": "2024-01-02", "valid_to": "2024-07-01", "value": 172306}
+{"entity": "PTY-0002", "fact_id": "FCT-000003", "relation": "payment_terms", "source_event": "EVT-000001", "valid_from": "2024-01-08", "valid_to": "2024-04-02", "value": "NET30"}
+{"entity": "PTY-0003", "fact_id": "FCT-000004", "relation": "payment_terms", "source_event": "EVT-000003", "valid_from": "2024-01-08", "valid_to": "2024-05-08", "value": "NET30"}
+{"entity": "PTY-0002", "fact_id": "FCT-000005", "relation": "unit_price:conveyor rollers", "source_event": "EVT-000002", "valid_from": "2024-01-15", "valid_to": null, "value": 1017}
+{"entity": "PTY-0003", "fact_id": "FCT-000006", "relation": "unit_price:aluminum sheet 2mm", "source_event": "EVT-000004", "valid_from": "2024-01-15", "valid_to": null, "value": 8881}
+{"entity": "PTY-0002", "fact_id": "FCT-000007", "relation": "payment_terms", "source_event": "EVT-000008", "valid_from": "2024-04-02", "valid_to": null, "value": "NET45"}
+{"entity": "PTY-0003", "fact_id": "FCT-000008", "relation": "payment_terms", "source_event": "EVT-000009", "valid_from": "2024-05-08", "valid_to": null, "value": "NET60"}
+{"entity": "PTY-0005", "fact_id": "FCT-000009", "relation": "monthly_rent", "source_event": "EVT-000007", "valid_from": "2024-07-01", "valid_to": null, "value": 186028}

@@ -1,0 +1,42 @@
+From: Zoe Iverson <zoe.iverson@kestrelfabrication.example>
+To: Yusuf Sato <yusuf.sato@meridianpackaging.example>
+Subject: Re: Purchase order PO-2024-0004 - aluminum sheet 2mm
+Date: Sat, 03 Feb 2024 09:00:00 +0000
+Message-ID: <MSG-000030@kestrelfabrication.example>
+In-Reply-To: <MSG-000025@meridianpackaging.example>
+References: <MSG-000024@kestrelfabrication.example>
+ <MSG-000025@meridianpackaging.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000030"
+
+--=-PTB-MSG-000030
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello Yusuf,
+
+Please amend PO-2024-0004: quantity is now 110 units of aluminum sheet 2mm, r=
+evised order total $9,769.10.
+The amended purchase order is attached as PO-2024-0004-A1.
+
+Regards,
+Zoe
+Kestrel Fabrication
+
+--=-PTB-MSG-000030
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="PO-2024-0004-A1.txt"
+MIME-Version: 1.0
+
+PURCHASE ORDER PO-2024-0004-A1
+Date: 2024-02-03
+Party: Meridian Packaging
+
+Po number: PO-2024-0004
+Item: aluminum sheet 2mm
+Qty: 110
+Unit price: $88.81
+Total: $9,769.10
+
+--=-PTB-MSG-000030--

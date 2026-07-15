@@ -1,0 +1,51 @@
+{
+  "name": "@nienhq/docket",
+  "version": "0.1.0",
+  "description": "Embeddable, local-first retrieval and memory engine for business correspondence. Immutable evidence store, JWZ threading, hybrid search, bi-temporal fact ledger. SQLite-first, no cloud dependency.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NienHQ/docket.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/server.d.ts",
+      "default": "./dist/mcp/server.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "better-sqlite3": "^12.2.0",
+    "postal-mime": "^2.4.3",
+    "zod": "^3.25.0"
+  },
+  "optionalDependencies": {
+    "sqlite-vec": "^0.1.7-alpha.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

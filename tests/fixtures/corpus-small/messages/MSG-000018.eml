@@ -1,0 +1,44 @@
+From: Grace Sato <grace.sato@eastportpackaging.example>
+To: Dev Garvey <dev.garvey@kestrelfabrication.example>
+Subject: Re: Purchase order PO-2024-0002 - conveyor rollers
+Date: Sat, 27 Jan 2024 09:00:00 +0000
+Message-ID: <MSG-000018@eastportpackaging.example>
+In-Reply-To: <MSG-000013@eastportpackaging.example>
+References: <MSG-000012@kestrelfabrication.example>
+ <MSG-000013@eastportpackaging.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000018"
+
+--=-PTB-MSG-000018
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hi Dev,
+
+Please find attached invoice INV-2024-0002 against PO-2024-0002 for $305.10.
+Payment is due by 2024-02-26 per our NET30 terms.
+
+Thanks,
+Grace
+Eastport Packaging
+
+--=-PTB-MSG-000018
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="INV-2024-0002.txt"
+MIME-Version: 1.0
+
+INVOICE INV-2024-0002
+Date: 2024-01-27
+Party: Eastport Packaging
+
+Invoice number: INV-2024-0002
+Issuer: Eastport Packaging
+Bill to: Kestrel Fabrication
+Issue date: 2024-01-27
+Due date: 2024-02-26
+Terms: NET30
+Total: $305.10
+Po ref: PO-2024-0002
+
+--=-PTB-MSG-000018--

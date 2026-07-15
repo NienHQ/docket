@@ -1,0 +1,39 @@
+From: Zoe Iverson <zoe.iverson@kestrelfabrication.example>
+To: Grace Sato <grace.sato@eastportpackaging.example>
+Subject: Purchase order PO-2024-0036 - conveyor rollers
+Date: Wed, 03 Jul 2024 09:00:00 +0000
+Message-ID: <MSG-000176@kestrelfabrication.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000176"
+
+--=-PTB-MSG-000176
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Grace,
+
+Please find attached purchase order PO-2024-0036 for 25 units of conveyor rol=
+lers at $10.17 per unit.
+The order total is $254.25.
+
+Thanks,
+Zoe
+Kestrel Fabrication
+
+--=-PTB-MSG-000176
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="PO-2024-0036.txt"
+MIME-Version: 1.0
+
+PURCHASE ORDER PO-2024-0036
+Date: 2024-07-03
+Party: Eastport Packaging
+
+Po number: PO-2024-0036
+Item: conveyor rollers
+Qty: 25
+Unit price: $10.17
+Total: $254.25
+
+--=-PTB-MSG-000176--

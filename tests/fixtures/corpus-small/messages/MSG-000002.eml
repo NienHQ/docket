@@ -1,0 +1,38 @@
+From: Hugo Yates <hugo.yates@bluepineproperties.example>
+To: Iris Ellis <iris.ellis@kestrelfabrication.example>
+Subject: Lease agreement LEASE-2024-001
+Date: Tue, 02 Jan 2024 09:07:00 +0000
+Message-ID: <MSG-000002@bluepineproperties.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-PTB-MSG-000002"
+
+--=-PTB-MSG-000002
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello Iris,
+
+Please find attached the signed lease LEASE-2024-001 for the premises, with a=
+ term of 36 months.
+Monthly rent is $1,723.06, effective 2024-01-02.
+
+Regards,
+Hugo
+Bluepine Properties
+
+--=-PTB-MSG-000002
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="LEASE-2024-001.txt"
+MIME-Version: 1.0
+
+LEASE AGREEMENT LEASE-2024-001
+Date: 2024-01-02
+Party: Bluepine Properties
+
+Lease number: LEASE-2024-001
+Monthly rent: $1,723.06
+Term months: 36
+Start date: 2024-01-02
+
+--=-PTB-MSG-000002--

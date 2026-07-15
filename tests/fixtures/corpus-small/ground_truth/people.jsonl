@@ -1,0 +1,8 @@
+{"addresses": [{"address": "zoe.iverson@kestrelfabrication.example", "from_date": "2024-01-01", "to_date": null}], "name": "Zoe Iverson", "party_id": "PTY-0001", "person_id": "PER-0001", "role": "purchasing"}
+{"addresses": [{"address": "dev.garvey@kestrelfabrication.example", "from_date": "2024-01-01", "to_date": null}], "name": "Dev Garvey", "party_id": "PTY-0001", "person_id": "PER-0002", "role": "accounts payable"}
+{"addresses": [{"address": "ben.whitfield@kestrelfabrication.example", "from_date": "2024-01-01", "to_date": null}], "name": "Ben Whitfield", "party_id": "PTY-0001", "person_id": "PER-0003", "role": "accounts receivable"}
+{"addresses": [{"address": "iris.ellis@kestrelfabrication.example", "from_date": "2024-01-01", "to_date": null}], "name": "Iris Ellis", "party_id": "PTY-0001", "person_id": "PER-0004", "role": "operations"}
+{"addresses": [{"address": "grace.sato@eastportpackaging.example", "from_date": "2024-01-01", "to_date": null}], "name": "Grace Sato", "party_id": "PTY-0002", "person_id": "PER-0005", "role": "sales"}
+{"addresses": [{"address": "yusuf.sato@meridianpackaging.example", "from_date": "2024-01-01", "to_date": null}], "name": "Yusuf Sato", "party_id": "PTY-0003", "person_id": "PER-0006", "role": "sales"}
+{"addresses": [{"address": "ava.ueda@umberwholesale.example", "from_date": "2024-01-01", "to_date": null}], "name": "Ava Ueda", "party_id": "PTY-0004", "person_id": "PER-0007", "role": "purchasing"}
+{"addresses": [{"address": "hugo.yates@bluepineproperties.example", "from_date": "2024-01-01", "to_date": null}], "name": "Hugo Yates", "party_id": "PTY-0005", "person_id": "PER-0008", "role": "property manager"}
