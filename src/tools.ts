@@ -30,6 +30,7 @@ const TABLE_COLUMNS: Record<SqlFilterQuery["table"], string[]> = {
   ],
   attachments: ["message_id", "att_index", "filename", "mime", "blob_hash"],
   parties: ["party_id", "name", "kind"],
+  ingest_errors: ["id", "at", "blob_hash", "reason", "detail"],
 };
 
 const OPS = new Set(["=", "!=", "<", "<=", ">", ">=", "like"]);

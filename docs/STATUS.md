@@ -6,13 +6,23 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 1.4 malformed input tolerance (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
   -s workflow (interactive). Workflow YAML is otherwise ready to write.
+
+## 2026-07-15 - task 1.4 done: malformed input quarantine
+
+- Batch ingest never throws: oversize (64 MiB cap, checked before parse),
+  parse_error (bytes preserved in CAS), and degenerate (no id, no from, no
+  date, empty body) inputs land in the new ingest_errors table (schema v2),
+  deduped per (blob_hash, reason), surfaced via BatchOptions.onError and
+  sqlFilter. Single-message emlBytes throws instead (caller error, not
+  archive noise). tests/quarantine.test.ts: poisoned-corpus accounting.
+  Suite: 66 tests.
 
 ## 2026-07-15 - task 1.3 done: ingest at scale
 

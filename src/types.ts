@@ -47,11 +47,19 @@ export interface IngestResult {
   fresh: boolean;
 }
 
+export interface IngestError {
+  blobHash: BlobHash | null;
+  reason: "parse_error" | "degenerate" | "oversize";
+  detail: string;
+}
+
 export interface BatchOptions {
   /** messages per write transaction, default 500 */
   batchSize?: number;
   /** called after each committed batch */
   onProgress?: (done: number, total: number) => void;
+  /** called for each quarantined input; the row also lands in ingest_errors */
+  onError?: (error: IngestError) => void;
 }
 
 export interface Ingestor {
@@ -195,7 +203,14 @@ export interface Entities {
 export type FilterOp = "=" | "!=" | "<" | "<=" | ">" | ">=" | "like";
 
 export interface SqlFilterQuery {
-  table: "messages" | "threads" | "documents" | "facts" | "attachments" | "parties";
+  table:
+    | "messages"
+    | "threads"
+    | "documents"
+    | "facts"
+    | "attachments"
+    | "parties"
+    | "ingest_errors";
   where?: Array<{ column: string; op: FilterOp; value: string | number }>;
   orderBy?: { column: string; dir: "asc" | "desc" };
   limit?: number; // default 50, max 500

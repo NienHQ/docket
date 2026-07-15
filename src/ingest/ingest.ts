@@ -1,25 +1,41 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { DocketDb } from "../db.js";
+import { nowIso } from "../db.js";
 import type {
   BatchOptions,
   BlobHash,
   EvidenceStore,
+  IngestError,
   Ingestor,
   IngestResult,
   MessageId,
 } from "../types.js";
 import type { ParsedEmail } from "./eml.js";
-import { parseEml } from "./eml.js";
+import { parseEml, sha256Hex } from "./eml.js";
 import { rethreadAll, rethreadIncremental } from "./jwz.js";
 import { splitMbox } from "./mbox.js";
 import { stripFragments } from "./strip.js";
+
+/** Hard cap on a single raw input; larger inputs are never parsed (spec 3.2). */
+export const MAX_INGEST_BYTES = 64 * 1024 * 1024;
 
 interface InsertOutcome {
   messageId: MessageId;
   blobHash: BlobHash;
   attachments: number;
   fresh: boolean;
+}
+
+/**
+ * Mbox splitter debris and truncation artifacts: no Message-ID header (parseEml
+ * assigned the synthetic id), no From address, no Date, empty body. Real mail
+ * always carries at least one of these.
+ */
+function isDegenerate(bytes: Uint8Array, parsed: ParsedEmail): boolean {
+  if (parsed.fromAddress !== "" || parsed.sentAt !== null) return false;
+  if (parsed.bodyText.trim() !== "") return false;
+  return parsed.messageId === `synth-${sha256Hex(bytes)}`;
 }
 
 function collectEmlFiles(root: string): string[] {
@@ -42,8 +58,25 @@ export class SqliteIngestor implements Ingestor {
     private readonly store: EvidenceStore,
   ) {}
 
+  /**
+   * Single-message path: the caller hands us one specific message, so bad
+   * input is a programming error at the call site, not archive noise. Parse
+   * failures, oversize input and degenerate content all throw here; the batch
+   * paths quarantine the same three cases instead.
+   */
   async emlBytes(bytes: Uint8Array): Promise<IngestResult> {
-    const out = await this.insertOne(bytes);
+    if (bytes.byteLength > MAX_INGEST_BYTES) {
+      throw new Error(
+        `emlBytes: input is ${bytes.byteLength} bytes, over the ${MAX_INGEST_BYTES} byte ingest cap`,
+      );
+    }
+    const parsed = await parseEml(bytes);
+    if (isDegenerate(bytes, parsed)) {
+      throw new Error(
+        "emlBytes: degenerate message (no Message-ID, no From, no Date, empty body)",
+      );
+    }
+    const out = this.insertParsed(bytes, parsed);
     if (out.fresh) rethreadIncremental(this.dk.db, out.messageId);
     return this.finalize(out);
   }
@@ -108,12 +141,39 @@ export class SqliteIngestor implements Ingestor {
       const slice = parts.slice(offset, offset + batchSize);
       const batch: Array<{ bytes: Uint8Array; parsed: ParsedEmail }> = [];
       for (const bytes of slice) {
-        try {
-          batch.push({ bytes, parsed: await parseEml(bytes) });
-        } catch {
-          // unparseable input must not sink the batch; task 1.4 adds a
-          // quarantine table so these get recorded instead of skipped
+        if (bytes.byteLength > MAX_INGEST_BYTES) {
+          // checked before parsing; the bytes are never handed to postal-mime
+          // and never stored, so blob_hash stays null for this reason
+          this.quarantine(
+            null,
+            "oversize",
+            `input is ${bytes.byteLength} bytes, over the ${MAX_INGEST_BYTES} byte cap`,
+            opts,
+          );
+          continue;
         }
+        let parsed: ParsedEmail;
+        try {
+          parsed = await parseEml(bytes);
+        } catch (err) {
+          this.quarantine(
+            bytes,
+            "parse_error",
+            err instanceof Error ? err.message : String(err),
+            opts,
+          );
+          continue;
+        }
+        if (isDegenerate(bytes, parsed)) {
+          this.quarantine(
+            bytes,
+            "degenerate",
+            "no Message-ID, no From address, no Date, empty body",
+            opts,
+          );
+          continue;
+        }
+        batch.push({ bytes, parsed });
       }
       outs.push(...writeBatch(batch));
       opts?.onProgress?.(Math.min(offset + slice.length, total), total);
@@ -123,8 +183,48 @@ export class SqliteIngestor implements Ingestor {
     return outs.map((o) => this.finalize(o));
   }
 
-  private async insertOne(bytes: Uint8Array): Promise<InsertOutcome> {
-    return this.insertParsed(bytes, await parseEml(bytes));
+  /**
+   * Record one rejected input. Raw bytes are preserved in the CAS first when
+   * possible (under a synthetic message id derived from their sha256) so the
+   * evidence survives even though no messages row is created; if even storing
+   * fails, the row records the event with a null blob_hash.
+   *
+   * Dedupe rule: at most one ingest_errors row per (blob_hash, reason), so
+   * re-running a batch over identical bad bytes does not grow the table.
+   * Oversize inputs have a null blob_hash and are not deduped. onError still
+   * fires for every quarantine event, deduped or not, so callers see live
+   * per-run counts.
+   */
+  private quarantine(
+    bytes: Uint8Array | null,
+    reason: IngestError["reason"],
+    detail: string,
+    opts?: BatchOptions,
+  ): void {
+    let blobHash: BlobHash | null = null;
+    if (bytes !== null) {
+      try {
+        blobHash = this.store.putBlob(bytes, {
+          mime: "message/rfc822",
+          source: { kind: "message", messageId: `synth-${sha256Hex(bytes)}` },
+        });
+      } catch {
+        blobHash = null;
+      }
+    }
+    const clipped = detail.slice(0, 500);
+    const db = this.dk.db;
+    const already =
+      blobHash !== null &&
+      db
+        .prepare("SELECT id FROM ingest_errors WHERE blob_hash = ? AND reason = ? LIMIT 1")
+        .get(blobHash, reason) !== undefined;
+    if (!already) {
+      db.prepare(
+        "INSERT INTO ingest_errors (at, blob_hash, reason, detail) VALUES (?, ?, ?, ?)",
+      ).run(nowIso(), blobHash, reason, clipped);
+    }
+    opts?.onError?.({ blobHash, reason, detail: clipped });
   }
 
   /** Synchronous tail of ingestion: everything after MIME parsing. */

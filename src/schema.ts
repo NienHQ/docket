@@ -7,7 +7,7 @@
  */
 import type { Database } from "better-sqlite3";
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2; // 2: ingest_errors quarantine table
 
 const DDL = `
 -- evidence: immutable content-addressed blobs
@@ -160,6 +160,15 @@ CREATE TABLE IF NOT EXISTS party_addresses (
   PRIMARY KEY (address, party_id, from_date)
 );
 CREATE INDEX IF NOT EXISTS idx_party_addresses_party ON party_addresses(party_id);
+
+-- quarantine: inputs that could not be ingested; raw bytes stay in the CAS
+CREATE TABLE IF NOT EXISTS ingest_errors (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  at        TEXT NOT NULL,
+  blob_hash TEXT,                        -- null only when bytes could not be stored
+  reason    TEXT NOT NULL,               -- parse_error | degenerate | oversize
+  detail    TEXT NOT NULL DEFAULT ''
+);
 
 -- append-only audit trail for destructive operations
 CREATE TABLE IF NOT EXISTS audit_log (

@@ -94,6 +94,13 @@ attachment in the CAS, upsert `messages` + `message_recipients` +
 - Out-of-order ingestion is expected (multi-year backfills). Threading must
   converge to the same thread assignments regardless of ingest order; the JWZ
   container pass runs over headers stored in the database, not in-memory state.
+- Batch ingest never throws on bad input: inputs that fail to parse, are
+  degenerate (no Message-ID, no From, no Date, empty body), or exceed the size
+  cap are quarantined in `ingest_errors` (raw bytes still stored in the CAS
+  when possible) and the batch continues. `BatchOptions.onError` surfaces each
+  quarantine to the caller; the table is queryable via `sqlFilter`. The
+  single-message `emlBytes` path still throws on parse failure (a programming
+  error at that call site, not archive noise).
 
 ### 3.3 Index (`src/indexer/`)
 
