@@ -1,6 +1,12 @@
 # Status
 
-Read this first when resuming work.
+Read this first when resuming work. The roadmap with per-task acceptance
+criteria is [plan.md](plan.md); claim tasks here (see the claiming
+convention at the bottom of the plan).
+
+## In progress
+
+(nothing claimed)
 
 ## 2026-07-15 - v0.1 core built
 
@@ -19,10 +25,6 @@ Read this first when resuming work.
 
 ## Next
 
-- Run against the full PaperTrail-Bench corpus once its harness (B1) exists;
-  publish numbers vs BM25-only and naive-vector baselines.
-- Pluggable PDF/OCR attachment parser interface (text/* only today).
-- LLM contextualizer example (interface is in, default is deterministic
-  metadata).
-- Entity resolution beyond exact address windows (bench category 5).
-- npm publish as @nienhq/docket once the API settles.
+See [plan.md](plan.md). Milestone 1 (production hardening: CI,
+incremental threading, scale, malformed input, concurrency contract,
+migrations, npm release) comes before feature work.
