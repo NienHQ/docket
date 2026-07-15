@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 1.6 schema migrations (claimed 2026-07-15)
 
 ## Blocked
 
