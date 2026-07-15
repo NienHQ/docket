@@ -205,6 +205,25 @@ CREATE TABLE IF NOT EXISTS ingest_errors (
 `);
     },
   },
+  {
+    to: 3,
+    up: (db) => {
+      db.exec(`
+-- derived-text cache for attachment parsers (PDF etc). Expensive to
+-- recompute, so reindex() keeps it; tombstone purges it; bumping a
+-- parser's version key invalidates naturally.
+CREATE TABLE IF NOT EXISTS parse_cache (
+  blob_hash    TEXT NOT NULL REFERENCES blobs(hash),
+  tool         TEXT NOT NULL,
+  tool_version TEXT NOT NULL,
+  text         TEXT NOT NULL,
+  meta_json    TEXT NOT NULL DEFAULT '{}',
+  created_at   TEXT NOT NULL,
+  PRIMARY KEY (blob_hash, tool, tool_version)
+);
+`);
+    },
+  },
 ];
 
 const LAST_MIGRATION = MIGRATIONS[MIGRATIONS.length - 1];

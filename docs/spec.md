@@ -117,8 +117,14 @@ attachment in the CAS, upsert `messages` + `message_recipients` +
 
 - **Chunks.** Message chunks come from `new` fragments (length-capped,
   paragraph-aligned). Attachment chunks come from decoded attachment text when
-  the mime type is textual; other types wait for a pluggable parser. Chunk ids
-  are `chk_<blobHash>_<n>` with char spans into the decoded text.
+  the mime type is textual, or from a registered `AttachmentParser` (e.g. the
+  PDF text extractor) otherwise. Parsed text is a derived artifact cached in
+  `parse_cache` keyed (blob hash, tool, tool version): reindex reuses it,
+  tombstone purges it, bumping the parser version invalidates it. Spans of
+  parser-derived chunks index into the parsed text (reproducible for the same
+  tool and version over the frozen blob); message and text-attachment chunk
+  spans index into the decoded source text. Scanned PDFs with no text layer
+  yield empty text and are skipped (OCR stays pluggable, not shipped).
 - **Contextual prefixes.** Every chunk gets a `context` string prepended at
   index time (stored separately, never mixed into the source text). The default
   contextualizer is deterministic metadata: sender, recipient, date, subject,

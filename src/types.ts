@@ -98,6 +98,20 @@ export interface ChunkDraft {
   meta: Record<string, string>;
 }
 
+/**
+ * Turns non-text attachment bytes into indexable text. Results are cached in
+ * parse_cache keyed (blob hash, tool, version); bumping version invalidates.
+ * Spans of chunks built from parsed attachments index into the parsed text,
+ * which is reproducible given the same (tool, version) over the frozen blob.
+ */
+export interface AttachmentParser {
+  readonly tool: string;
+  readonly version: string;
+  /** exact mime types this parser handles, e.g. ["application/pdf"] */
+  readonly mimes: string[];
+  parse(bytes: Uint8Array): Promise<{ text: string; meta?: Record<string, string> }>;
+}
+
 /** Produces the contextual prefix stored alongside (never inside) chunk text. */
 export interface Contextualizer {
   readonly tool: string;
@@ -257,6 +271,8 @@ export interface Tools {
 export interface DocketOptions {
   embedder?: Embedder;
   contextualizer?: Contextualizer;
+  /** attachment parsers for non-text mimes (e.g. the PDF text extractor) */
+  parsers?: AttachmentParser[];
   /**
    * Open as a reader: no ingest, no facts/entities writes, no tombstone,
    * no reindex. Many readonly opens may coexist with one writer (WAL).

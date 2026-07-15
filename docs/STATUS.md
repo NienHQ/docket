@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 2.1 attachment parsers + PDF text (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,17 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-15 - task 2.1 done: attachment parsers + PDF text
+
+- AttachmentParser interface + DocketOptions.parsers; PdfTextParser
+  (pdfjs-dist ^5, dynamic import so the core never loads it; 5.x not 6.x
+  to keep the Node 20 floor). Parsed text cached in parse_cache (schema
+  v3) keyed (blob, tool, version): reindex reuses, version bump
+  invalidates, tombstone purges. Scanned PDFs cache empty text and index
+  nothing; parser throws are contained. Committed sub-KiB PDF fixtures +
+  scripts/make-pdf-fixtures.mjs. Suite: 86 tests.
+- Known gap for later: no stats surface for skipped/failed parses.
 
 ## 2026-07-15 - task 1.7 prep done: publish-ready packaging
 
