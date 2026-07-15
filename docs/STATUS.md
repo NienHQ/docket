@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 1.5 concurrency contract (claimed 2026-07-15)
 
 ## Blocked
 
