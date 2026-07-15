@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 3.1 fact extraction pipeline (claimed 2026-07-16)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
