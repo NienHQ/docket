@@ -71,6 +71,9 @@ export class Docket {
       ? {
           addParty: readonlyThrow,
           mapAddress: readonlyThrow,
+          suggestParties: () => entities.suggestParties(),
+          confirmSuggestion: readonlyThrow,
+          dismissSuggestion: readonlyThrow,
           resolve: (a, d) => entities.resolve(a, d),
           timeline: (p, r) => entities.timeline(p, r),
         }

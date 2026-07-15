@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 3.2 entity resolution v2 (claimed 2026-07-16)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,20 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-16 - task 3.2 done: entity resolution v2
+
+- suggestParties(): three deterministic detectors (domain grouping with
+  freemail exclusion, same-person across addresses, person-move with
+  activity-window validity boundaries), content-hash ids stable across
+  recomputation and confirmation. Nothing auto-merges: decisions persist
+  in party_suggestion_decisions (schema v7), confirm applies party +
+  mappings in one transaction, readonly instances can suggest but not
+  decide. MCP: suggest (always) + confirm/dismiss (write mode).
+- Category-5 shape proven on a synthetic company-move corpus; the bench
+  B1 category 5 fixture replaces that check when it exists.
+- Known gap for bench B1: hybridSearch partyId filter ignores mapping
+  validity windows (pre-existing). Suite: 137 tests + 1 skip.
 
 ## 2026-07-16 - task 3.1 done: fact extraction pipeline
 

@@ -175,6 +175,33 @@ export async function startServer(dir: string, opts: ServerOptions = {}): Promis
   );
 
   server.registerTool(
+    "docket_suggest_parties",
+    {
+      description:
+        "Deterministic entity-resolution proposals computed from message " +
+        "headers: domain grouping, same-person across addresses, and " +
+        "person-move with validity windows. Read-only; nothing auto-merges. " +
+        "Undecided suggestions only, unless includeDecided is true. Apply " +
+        "or hide one via docket_confirm_party_suggestion / " +
+        "docket_dismiss_party_suggestion (write mode).",
+      inputSchema: {
+        includeDecided: z
+          .boolean()
+          .optional()
+          .describe("also return confirmed and dismissed suggestions (default false)"),
+      },
+    },
+    async ({ includeDecided }) => {
+      const suggestions = dk.tools.suggestParties();
+      return text(
+        includeDecided === true
+          ? suggestions
+          : suggestions.filter((s) => s.status === "suggested"),
+      );
+    },
+  );
+
+  server.registerTool(
     "docket_fact_history",
     {
       description:
@@ -244,6 +271,44 @@ export async function startServer(dir: string, opts: ServerOptions = {}): Promis
           ...(toDate !== undefined ? { toDate } : {}),
         });
         return text({ ok: true, partyId, address });
+      },
+    );
+
+    server.registerTool(
+      "docket_confirm_party_suggestion",
+      {
+        description:
+          "Apply a suggestion from docket_suggest_parties: create the " +
+          "proposed party (if any), apply its address mappings, and record " +
+          "the decision. Errors on unknown or already decided ids.",
+        inputSchema: { suggestionId: z.string() },
+      },
+      async ({ suggestionId }) => {
+        try {
+          dk.entities.confirmSuggestion(suggestionId);
+          return text({ ok: true, suggestionId, status: "confirmed" });
+        } catch (err) {
+          return text(`error: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      },
+    );
+
+    server.registerTool(
+      "docket_dismiss_party_suggestion",
+      {
+        description:
+          "Record a dismissal for a suggestion from docket_suggest_parties " +
+          "so it stops surfacing. Changes no parties or mappings. Errors on " +
+          "unknown or already decided ids.",
+        inputSchema: { suggestionId: z.string() },
+      },
+      async ({ suggestionId }) => {
+        try {
+          dk.entities.dismissSuggestion(suggestionId);
+          return text({ ok: true, suggestionId, status: "dismissed" });
+        } catch (err) {
+          return text(`error: ${err instanceof Error ? err.message : String(err)}`);
+        }
       },
     );
   }

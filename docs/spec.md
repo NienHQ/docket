@@ -189,6 +189,20 @@ people change companies). `resolve(address, date?)` returns the party.
 `timeline(partyId)` is a SQL view merge: facts, documents, message activity,
 ordered by time. No knowledge graph.
 
+**Suggestions, never auto-merges** (`suggestParties`): deterministic
+proposals computed on demand from message headers, three kinds: domain
+grouping (addresses sharing a non-freemail domain that are unmapped, or
+mapped only to that domain's own suggested party, become one party; this
+keeps a confirmed suggestion's id stable on recomputation), same-person
+(one normalized display name across several
+addresses maps to one party), and person-move (same display name across
+domains belonging to different parties, with activity windows setting the
+mapping validity boundary). Suggestion ids are content hashes, so the same
+proposal survives recomputation; only decisions persist
+(`party_suggestion_decisions`, schema v7). `confirmSuggestion` applies the
+party and mappings in one transaction; `dismissSuggestion` hides it.
+Suggestion computation is read-safe; deciding requires a writer.
+
 ### 3.6 Tools and facade
 
 ```ts

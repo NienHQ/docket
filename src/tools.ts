@@ -4,6 +4,7 @@ import type { DocketDb } from "./db.js";
 import type {
   Entities,
   Indexer,
+  PartySuggestion,
   SearchFilter,
   SearchHit,
   SourceView,
@@ -131,6 +132,10 @@ export class SqliteTools implements Tools {
     range?: { after?: string; before?: string },
   ): TimelineEntry[] {
     return this.entities.timeline(partyId, range);
+  }
+
+  suggestParties(): PartySuggestion[] {
+    return this.entities.suggestParties();
   }
 
   getSource(chunkId: string): SourceView | null {

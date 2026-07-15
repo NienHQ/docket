@@ -270,15 +270,39 @@ export interface TimelineEntry {
   summary: string;
 }
 
+export interface AddressMapping {
+  address: string;
+  partyId: string;
+  person?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+/**
+ * A deterministic merge/mapping proposal. Suggestions are recomputed on
+ * demand (never stored); only decisions persist. Nothing auto-merges:
+ * confirmSuggestion applies the proposal, dismissSuggestion hides it.
+ */
+export interface PartySuggestion {
+  /** stable content hash of the proposal, survives recomputation */
+  suggestionId: string;
+  kind: "domain_party" | "same_person" | "person_move";
+  status: "suggested" | "confirmed" | "dismissed";
+  summary: string;
+  /** party to create first, when the proposal introduces a new one */
+  newParty?: Party;
+  mappings: AddressMapping[];
+}
+
 export interface Entities {
   addParty(party: Party): void;
-  mapAddress(m: {
-    address: string;
-    partyId: string;
-    person?: string;
-    fromDate?: string;
-    toDate?: string;
-  }): void;
+  mapAddress(m: AddressMapping): void;
+  /** deterministic proposals from message headers; read-only computation */
+  suggestParties(): PartySuggestion[];
+  /** apply a suggestion's party + mappings and record the decision */
+  confirmSuggestion(suggestionId: string): void;
+  /** record a dismissal so the suggestion stops surfacing */
+  dismissSuggestion(suggestionId: string): void;
   resolve(address: string, date?: string): Party | null;
   timeline(partyId: string, range?: { after?: string; before?: string }): TimelineEntry[];
 }
@@ -341,6 +365,8 @@ export interface Tools {
     range?: { after?: string; before?: string },
   ): TimelineEntry[];
   getSource(chunkId: ChunkId): SourceView | null;
+  /** entity-resolution proposals (spec 3.5); read-only computation */
+  suggestParties(): PartySuggestion[];
 }
 
 export interface DocketOptions {

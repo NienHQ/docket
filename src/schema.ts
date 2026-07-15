@@ -289,6 +289,20 @@ CREATE TABLE IF NOT EXISTS fact_extract_rejects (
 `);
     },
   },
+  {
+    to: 7,
+    up: (db) => {
+      // entity-resolution suggestions are recomputed on demand; only the
+      // human decision persists, keyed by the suggestion's content hash
+      db.exec(`
+CREATE TABLE IF NOT EXISTS party_suggestion_decisions (
+  suggestion_id TEXT PRIMARY KEY,
+  status        TEXT NOT NULL CHECK (status IN ('confirmed', 'dismissed')),
+  decided_at    TEXT NOT NULL
+);
+`);
+    },
+  },
 ];
 
 const LAST_MIGRATION = MIGRATIONS[MIGRATIONS.length - 1];
