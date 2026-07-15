@@ -116,6 +116,12 @@ export interface AttachmentParser {
 export interface Contextualizer {
   readonly tool: string;
   readonly version: string;
+  /**
+   * When true, results are cached in context_cache keyed
+   * (chunk id, tool, version) so reindex never re-pays the cost. Leave
+   * false/unset for cheap deterministic contextualizers.
+   */
+  readonly cacheable?: boolean;
   contextualize(chunk: ChunkDraft): Promise<string>;
 }
 

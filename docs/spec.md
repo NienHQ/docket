@@ -128,8 +128,11 @@ attachment in the CAS, upsert `messages` + `message_recipients` +
 - **Contextual prefixes.** Every chunk gets a `context` string prepended at
   index time (stored separately, never mixed into the source text). The default
   contextualizer is deterministic metadata: sender, recipient, date, subject,
-  attachment filename. An async LLM contextualizer can be plugged in; its
-  output is cache keyed by (blob hash, tool, tool version).
+  attachment filename. An async LLM contextualizer can be plugged in; when it
+  declares `cacheable: true` its output is cached in `context_cache` keyed
+  (chunk id, tool, tool version), so reindex never re-pays LLM cost and a
+  version bump invalidates. Tombstone and replaced-message purges remove
+  cached context along with the content.
 - **FTS** over `context || text` via SQLite FTS5 (porter tokenizer), BM25.
 - **Vectors** are optional. If an `Embedder` is configured, chunk embeddings
   go to the `embeddings` table (float32 blob). Vector search uses sqlite-vec

@@ -7,6 +7,7 @@ import type {
   AttachmentParser,
   BlobHash,
   ChunkDraft,
+  ChunkId,
   Contextualizer,
   Embedder,
   Indexer,
@@ -37,6 +38,24 @@ interface AttachmentRow {
 interface FragmentRow {
   span_start: number;
   span_end: number;
+}
+
+/**
+ * The one place chunk ids are minted (spec invariant 3: stable across
+ * reindex). Message chunks: chk_<blob>_<n>. Attachment chunks are scoped per
+ * message because attachment blobs are deduplicated: chk_<blob>_m<hash12>_<n>
+ * where hash12 is the first 12 hex chars of sha256(messageId).
+ */
+function chunkIdFor(
+  blobHash: BlobHash,
+  chunkIndex: number,
+  scopeMessageId?: MessageId,
+): ChunkId {
+  const suffix =
+    scopeMessageId === undefined
+      ? ""
+      : `m${createHash("sha256").update(scopeMessageId).digest("hex").slice(0, 12)}_`;
+  return `chk_${blobHash}_${suffix}${chunkIndex}`;
 }
 
 export interface SqliteIndexerOptions {
@@ -294,8 +313,41 @@ export class SqliteIndexer implements Indexer {
     drafts: ChunkDraft[],
     scopeMessageId?: MessageId,
   ): Promise<void> {
+    const db = this.dbh.db;
+    // final ids, computed up front: the context cache below is keyed by the
+    // exact chunk id the insert loop will use (same helper, cannot drift)
+    const chunkIds = drafts.map((d) => chunkIdFor(d.blobHash, d.chunkIndex, scopeMessageId));
+
+    const ctxTool = this.contextualizer;
     const contexts: string[] = [];
-    for (const d of drafts) contexts.push(await this.contextualizer.contextualize(d));
+    if (ctxTool.cacheable === true) {
+      // expensive contextualizer: consult context_cache keyed
+      // (chunk id, tool, version) so reindex never re-pays the cost
+      const getCtx = db.prepare(
+        "SELECT context FROM context_cache WHERE chunk_id = ? AND tool = ? AND tool_version = ?",
+      );
+      const insCtx = db.prepare(
+        "INSERT OR IGNORE INTO context_cache (chunk_id, tool, tool_version, context, created_at)" +
+          " VALUES (?,?,?,?,?)",
+      );
+      for (let i = 0; i < drafts.length; i++) {
+        const d = drafts[i]!;
+        const chunkId = chunkIds[i]!;
+        const cached = getCtx.get(chunkId, ctxTool.tool, ctxTool.version) as
+          | { context: string }
+          | undefined;
+        if (cached) {
+          contexts.push(cached.context);
+          continue;
+        }
+        const context = await ctxTool.contextualize(d);
+        insCtx.run(chunkId, ctxTool.tool, ctxTool.version, context, nowIso());
+        contexts.push(context);
+      }
+    } else {
+      // cheap deterministic contextualizer: no cache table involvement
+      for (const d of drafts) contexts.push(await ctxTool.contextualize(d));
+    }
 
     let vectors: Float32Array[] = [];
     if (this.embedder && drafts.length > 0) {
@@ -304,7 +356,6 @@ export class SqliteIndexer implements Indexer {
       );
     }
 
-    const db = this.dbh.db;
     const insChunk = db.prepare(
       "INSERT INTO chunks (chunk_id, blob_hash, chunk_index, source_kind, message_id," +
         " span_start, span_end, text, context, meta_json) VALUES (?,?,?,?,?,?,?,?,?,?)",
@@ -323,9 +374,6 @@ export class SqliteIndexer implements Indexer {
     const scopeArgs: string[] = scopeMessageId === undefined
       ? [blobHash]
       : [blobHash, scopeMessageId];
-    const idSuffix = scopeMessageId === undefined
-      ? ""
-      : `m${createHash("sha256").update(scopeMessageId).digest("hex").slice(0, 12)}_`;
 
     db.transaction(() => {
       db.prepare(
@@ -337,7 +385,7 @@ export class SqliteIndexer implements Indexer {
       db.prepare(`DELETE FROM chunks WHERE ${scopeSql}`).run(...scopeArgs);
 
       drafts.forEach((d, i) => {
-        const chunkId = `chk_${d.blobHash}_${idSuffix}${d.chunkIndex}`;
+        const chunkId = chunkIds[i]!;
         const context = contexts[i] ?? "";
         insChunk.run(
           chunkId,

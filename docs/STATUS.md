@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 2.3 LLM contextualizer with cache (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,17 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-15 - task 2.3 done: LLM contextualizer with cache
+
+- LlmContextualizer: caller-supplied complete(), no vendor SDK;
+  deterministic prompt from chunk meta + text; empty replies fall back
+  to the metadata contextualizer (fallback cached by design).
+- context_cache (schema v5) keyed (chunk id, tool, version); chunk ids
+  now minted in one shared helper so cache lookups and inserts cannot
+  drift. Reindex is a 100 percent cache hit (asserted); version bump
+  re-pays; tombstone and replaced-message purges remove cached context.
+  Suite: 104 tests + 1 env-flagged skip.
 
 ## 2026-07-15 - task 2.2 done: embedder adapters + reembed
 

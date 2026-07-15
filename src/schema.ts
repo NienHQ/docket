@@ -243,6 +243,24 @@ ALTER TABLE embeddings_v4 RENAME TO embeddings;
 `);
     },
   },
+  {
+    to: 5,
+    up: (db) => {
+      db.exec(`
+-- cache for expensive (LLM) contextual prefixes, keyed per chunk and
+-- contextualizer version. reindex() reuses it; tombstone and
+-- replaced-message purges remove it with the content.
+CREATE TABLE IF NOT EXISTS context_cache (
+  chunk_id     TEXT NOT NULL,
+  tool         TEXT NOT NULL,
+  tool_version TEXT NOT NULL,
+  context      TEXT NOT NULL,
+  created_at   TEXT NOT NULL,
+  PRIMARY KEY (chunk_id, tool, tool_version)
+);
+`);
+    },
+  },
 ];
 
 const LAST_MIGRATION = MIGRATIONS[MIGRATIONS.length - 1];

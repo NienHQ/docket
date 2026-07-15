@@ -331,6 +331,11 @@ export class SqliteIngestor implements Ingestor {
     db.prepare(
       "DELETE FROM chunks_fts WHERE chunk_id IN (SELECT chunk_id FROM chunks WHERE blob_hash = ?)",
     ).run(blobHash);
+    // cached contexts belong to the replaced content; the subquery needs the
+    // chunks rows, so this runs before the chunks delete
+    db.prepare(
+      "DELETE FROM context_cache WHERE chunk_id IN (SELECT chunk_id FROM chunks WHERE blob_hash = ?)",
+    ).run(blobHash);
     db.prepare("DELETE FROM chunks WHERE blob_hash = ?").run(blobHash);
   }
 

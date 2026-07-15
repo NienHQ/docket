@@ -85,6 +85,11 @@ export class SqliteEvidenceStore implements EvidenceStore {
       db.prepare(
         "DELETE FROM chunks_fts WHERE chunk_id IN (SELECT chunk_id FROM chunks WHERE blob_hash = ?)",
       ).run(hash);
+      // cached contexts derive from the content; the subquery needs the
+      // chunks rows, so this runs before the chunks delete
+      db.prepare(
+        "DELETE FROM context_cache WHERE chunk_id IN (SELECT chunk_id FROM chunks WHERE blob_hash = ?)",
+      ).run(hash);
       db.prepare("DELETE FROM chunks WHERE blob_hash = ?").run(hash);
       // parser-derived text is content too; erasure must purge the cache
       db.prepare("DELETE FROM parse_cache WHERE blob_hash = ?").run(hash);

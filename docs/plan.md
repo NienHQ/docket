@@ -132,8 +132,10 @@ assert).
 ### 2.3 LLM contextualizer with cache
 The Contextualizer interface exists; ship an implementation that calls a
 caller-supplied `complete(prompt) => Promise<string>` function (no vendor
-SDK dependency), with the cache keyed (blob hash, tool, tool version) in
-a new `context_cache` table so reindex does not re-pay LLM cost.
+SDK dependency), with the cache keyed (chunk id, tool, tool version) in
+a new `context_cache` table so reindex does not re-pay LLM cost (chunk
+ids are stable across reindex per invariant 3, and context is a
+per-chunk artifact, so chunk-level keys are the correct granularity).
 Deterministic default remains the fallback and the test path.
 Done when: reindex with a mock complete() hits cache 100% on second run.
 
