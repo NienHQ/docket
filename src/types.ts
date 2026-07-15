@@ -257,4 +257,10 @@ export interface Tools {
 export interface DocketOptions {
   embedder?: Embedder;
   contextualizer?: Contextualizer;
+  /**
+   * Open as a reader: no ingest, no facts/entities writes, no tombstone,
+   * no reindex. Many readonly opens may coexist with one writer (WAL).
+   * The database must already exist and be at the current schema version.
+   */
+  readonly?: boolean;
 }

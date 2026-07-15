@@ -1,6 +1,11 @@
 /**
  * Stdio MCP server exposing one Docket directory to MCP clients.
- * Start: node dist/mcp/server.js --dir <path>
+ * Start: node dist/mcp/server.js --dir <path> [--write | --readonly]
+ *
+ * The server opens the directory read-only by default (many readers may
+ * coexist with one writer, per the concurrency contract in docs/spec.md
+ * section 2). Pass --write to open a writer and register the fact and
+ * entity write tools.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -18,8 +23,14 @@ function text(value: unknown) {
   };
 }
 
-export async function startServer(dir: string): Promise<void> {
-  const dk = await Docket.open(dir);
+export interface ServerOptions {
+  /** open a writer and register the write tools; default is read-only */
+  write?: boolean;
+}
+
+export async function startServer(dir: string, opts: ServerOptions = {}): Promise<void> {
+  const write = opts.write === true;
+  const dk = await Docket.open(dir, { readonly: !write });
   const server = new McpServer({ name: "docket", version: "0.1.0" });
 
   server.registerTool(
@@ -156,18 +167,94 @@ export async function startServer(dir: string): Promise<void> {
     async ({ entity, relation }) => text(dk.facts.history(entity, relation)),
   );
 
+  if (write) {
+    server.registerTool(
+      "docket_fact_assert",
+      {
+        description:
+          "Assert a bi-temporal fact for (entity, relation). Requires a " +
+          "source citation: sourceChunk or sourceMessage. Returns the created row.",
+        inputSchema: {
+          entity: z.string(),
+          relation: z.string(),
+          value: z.string(),
+          validFrom: z.string().describe("ISO date, event time"),
+          sourceChunk: z.string().optional(),
+          sourceMessage: z.string().optional(),
+        },
+      },
+      async ({ entity, relation, value, validFrom, sourceChunk, sourceMessage }) => {
+        if (sourceChunk === undefined && sourceMessage === undefined) {
+          return text("error: provide sourceChunk or sourceMessage (at least one)");
+        }
+        const row = dk.facts.assert({
+          entity,
+          relation,
+          value,
+          validFrom,
+          source: {
+            ...(sourceChunk !== undefined ? { chunkId: sourceChunk } : {}),
+            ...(sourceMessage !== undefined ? { messageId: sourceMessage } : {}),
+          },
+        });
+        return text(row);
+      },
+    );
+
+    server.registerTool(
+      "docket_entity_map",
+      {
+        description:
+          "Upsert a party and map an email address to it, optionally with a " +
+          "validity window.",
+        inputSchema: {
+          partyId: z.string(),
+          name: z.string(),
+          kind: z.string().optional().describe("default: company"),
+          address: z.string(),
+          person: z.string().optional(),
+          fromDate: z.string().optional(),
+          toDate: z.string().optional(),
+        },
+      },
+      async ({ partyId, name, kind, address, person, fromDate, toDate }) => {
+        dk.entities.addParty({ partyId, name, kind: kind ?? "company" });
+        dk.entities.mapAddress({
+          address,
+          partyId,
+          ...(person !== undefined ? { person } : {}),
+          ...(fromDate !== undefined ? { fromDate } : {}),
+          ...(toDate !== undefined ? { toDate } : {}),
+        });
+        return text({ ok: true, partyId, address });
+      },
+    );
+  }
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
 
-const dirFlag = process.argv.indexOf("--dir");
 if (import.meta.url === `file://${process.argv[1]}`) {
-  if (dirFlag === -1 || !process.argv[dirFlag + 1]) {
-    console.error("usage: node dist/mcp/server.js --dir <path>");
+  const argv = process.argv;
+  const dirFlag = argv.indexOf("--dir");
+  const write = argv.includes("--write");
+  const readonlyFlag = argv.includes("--readonly"); // explicit no-op: readonly is the default
+  const usage =
+    "usage: node dist/mcp/server.js --dir <path> [--write | --readonly]";
+  if (dirFlag === -1 || !argv[dirFlag + 1] || (write && readonlyFlag)) {
+    console.error(usage);
     process.exit(1);
   }
-  startServer(process.argv[dirFlag + 1] as string).catch((err) => {
-    console.error(err);
+  startServer(argv[dirFlag + 1] as string, { write }).catch((err) => {
+    console.error(err instanceof Error ? err.message : String(err));
+    if (!write) {
+      console.error(
+        "hint: the server opens read-only by default, so the database must " +
+          "already exist at the current schema version; open a writer once " +
+          "(Docket.open without readonly, or --write) to create or migrate it",
+      );
+    }
     process.exit(1);
   });
 }

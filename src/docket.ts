@@ -17,6 +17,12 @@ import type {
   Tools,
 } from "./types.js";
 
+function readonlyThrow(): never {
+  throw new Error(
+    "docket: this instance was opened read-only; writes are not allowed",
+  );
+}
+
 /**
  * The facade: opens the appliance directory and wires the layers together.
  * Ingest methods here also index; the raw modules stay single-purpose.
@@ -42,11 +48,41 @@ export class Docket {
     entities: Entities,
     tools: Tools,
   ) {
-    this.store = store;
-    this.facts = facts;
-    this.entities = entities;
+    const ro = dbx.readonly;
+    this.store = ro
+      ? {
+          putBlob: readonlyThrow,
+          tombstone: readonlyThrow,
+          getBlob: (h) => store.getBlob(h),
+          hasBlob: (h) => store.hasBlob(h),
+        }
+      : store;
+    this.facts = ro
+      ? {
+          assert: readonlyThrow,
+          backfill: readonlyThrow,
+          asOf: (e, r, d) => facts.asOf(e, r, d),
+          history: (e, r) => facts.history(e, r),
+        }
+      : facts;
+    this.entities = ro
+      ? {
+          addParty: readonlyThrow,
+          mapAddress: readonlyThrow,
+          resolve: (a, d) => entities.resolve(a, d),
+          timeline: (p, r) => entities.timeline(p, r),
+        }
+      : entities;
     this.tools = tools;
-    this.ingest = {
+    this.ingest = ro
+      ? {
+          // async-typed surfaces reject rather than throw synchronously
+          emlBytes: async () => readonlyThrow(),
+          emlFile: async () => readonlyThrow(),
+          mboxFile: async () => readonlyThrow(),
+          dir: async () => readonlyThrow(),
+        }
+      : {
       emlBytes: async (bytes) => {
         const r = await this.ingestor.emlBytes(bytes);
         await this.indexIngested([r]);
@@ -71,7 +107,7 @@ export class Docket {
   }
 
   static async open(dir: string, options: DocketOptions = {}): Promise<Docket> {
-    const dbx = openDb(dir);
+    const dbx = openDb(dir, { readonly: options.readonly === true });
     const store = new SqliteEvidenceStore(dbx);
     const ingestor = new SqliteIngestor(dbx, store);
     const indexer = new SqliteIndexer(dbx, options);
@@ -83,6 +119,7 @@ export class Docket {
 
   /** Wipe all derived state and rebuild it from evidence (spec invariant 3). */
   async reindex(): Promise<void> {
+    if (this.dbx.readonly) readonlyThrow();
     const { db } = this.dbx;
     for (const table of DERIVED_TABLES) {
       db.exec(`DELETE FROM ${table}`);

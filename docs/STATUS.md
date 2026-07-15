@@ -6,13 +6,25 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 1.5 concurrency contract (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
   -s workflow (interactive). Workflow YAML is otherwise ready to write.
+
+## 2026-07-15 - task 1.5 done: concurrency contract
+
+- One writer, many readers, enforced: Docket.open({ readonly: true })
+  requires an existing db at the current schema version, every write
+  surface rejects/throws, busy_timeout 5000 on all connections. Contract
+  documented in spec section 2.
+- MCP server opens read-only by default; --write registers
+  docket_fact_assert and docket_entity_map.
+- tests/concurrency.test.ts: writer + two readers with WAL visibility,
+  all guards, old-schema rejection, cross-process reader via dist.
+  Suite: 73 tests.
 
 ## 2026-07-15 - task 1.4 done: malformed input quarantine
 

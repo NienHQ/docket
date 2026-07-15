@@ -49,6 +49,17 @@ Blob writes are atomic (write to temp, rename). A blob is never modified;
 erasure for compliance is a tombstone row plus object file removal, recorded
 in the audit log table.
 
+**Concurrency contract: one writer, many readers.** SQLite runs in WAL mode,
+so any number of read-only opens (`Docket.open(dir, { readonly: true })`)
+may coexist with a single writer process; readers see consistent snapshots
+and never block the writer. Two concurrent writers are NOT supported and are
+the caller's responsibility to prevent. All connections set a 5 second
+busy_timeout so brief lock contention retries instead of failing. A
+read-only open requires the database to exist at the current schema version
+(a writer must have migrated it first); every write surface on a read-only
+instance throws. The MCP server opens read-only by default; pass --write to
+enable the fact and entity write tools.
+
 ## 3. Layers and module boundaries
 
 | layer | dir | owns |
