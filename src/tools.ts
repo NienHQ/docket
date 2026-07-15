@@ -73,6 +73,7 @@ export class SqliteTools implements Tools {
     k?: number;
     filter?: SearchFilter;
     dedupe?: boolean;
+    expand?: "thread" | "none";
   }): Promise<SearchHit[]> {
     return this.indexer.hybridSearch(q);
   }

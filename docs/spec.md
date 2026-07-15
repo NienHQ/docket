@@ -199,6 +199,13 @@ dk.entities.addParty(...) / dk.entities.mapAddress(...) / dk.entities.resolve(..
 (column, op, value) compiled to a prepared statement. Raw SQL is never
 accepted from callers.
 
+`hybridSearch` accepts `expand: "thread"` to attach bounded surrounding
+context to each hit (the email-shaped version of parent-document
+retrieval): up to 2 messages each side of the hit's message within its
+thread, ordered by sent time, the hit's own message excluded, each
+entry's stripped new text capped at 1200 chars. Default is `"none"`;
+agents that need the full thread still call `getThread`.
+
 ### 3.7 MCP server (`src/mcp/`)
 
 Stdio MCP server exposing the five tools plus fact queries, one Docket dir per

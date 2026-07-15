@@ -141,6 +141,14 @@ export interface DuplicateRef {
   sentAt?: string | undefined;
 }
 
+export interface ThreadContextEntry {
+  messageId: MessageId;
+  sentAt: string | null;
+  fromAddress: string;
+  /** concatenated 'new' fragments, capped per message */
+  newText: string;
+}
+
 export interface SearchHit {
   chunkId: ChunkId;
   score: number;
@@ -156,6 +164,12 @@ export interface SearchHit {
    * Present only when dedupe ran and found duplicates.
    */
   duplicates?: DuplicateRef[];
+  /**
+   * Surrounding thread messages (up to 2 each side, hit's own message
+   * excluded). Present only when expand: "thread" was requested and the
+   * hit's thread has neighbors.
+   */
+  threadContext?: ThreadContextEntry[];
 }
 
 export interface Indexer {
@@ -168,6 +182,8 @@ export interface Indexer {
     filter?: SearchFilter;
     /** collapse near-identical candidates (default true) */
     dedupe?: boolean;
+    /** attach surrounding thread text to each hit (default "none") */
+    expand?: "thread" | "none";
   }): Promise<SearchHit[]>;
 }
 
@@ -281,6 +297,8 @@ export interface Tools {
     filter?: SearchFilter;
     /** collapse near-identical candidates (default true) */
     dedupe?: boolean;
+    /** attach surrounding thread text to each hit (default "none") */
+    expand?: "thread" | "none";
   }): Promise<SearchHit[]>;
   getThread(threadId: ThreadId): ThreadView | null;
   getEntityTimeline(

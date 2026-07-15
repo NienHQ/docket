@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 2.5 thread-context expansion (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,16 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-15 - task 2.5 done: thread-context expansion (MILESTONE 2 COMPLETE)
+
+- hybridSearch expand: "thread" attaches up to 2 neighbors each side of
+  the hit's message (own message excluded, new text capped at 1200
+  chars, one thread query per distinct thread among hits). Runs after
+  dedupe and the top-k cut: display context only, ranking untouched.
+  Exposed through tools and MCP. Suite: 118 tests + 1 skip.
+- Milestone 2 done. Next: M3 (fact extraction, entity resolution v2,
+  bench ablations). Still credential-blocked: 1.1 CI, 1.7 publish.
 
 ## 2026-07-15 - task 2.4 done: near-duplicate suppression
 

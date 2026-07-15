@@ -58,13 +58,20 @@ export async function startServer(dir: string, opts: ServerOptions = {}): Promis
           .boolean()
           .optional()
           .describe("collapse near-identical results (default true)"),
+        expand: z
+          .enum(["thread", "none"])
+          .optional()
+          .describe(
+            "attach surrounding thread text to each hit (default \"none\")",
+          ),
       },
     },
-    async ({ query, k, fromAddress, partyId, threadId, after, before, sourceKind, mime, dedupe }) => {
+    async ({ query, k, fromAddress, partyId, threadId, after, before, sourceKind, mime, dedupe, expand }) => {
       const hits = await dk.tools.hybridSearch({
         query,
         ...(k !== undefined ? { k } : {}),
         ...(dedupe !== undefined ? { dedupe } : {}),
+        ...(expand !== undefined ? { expand } : {}),
         filter: {
           ...(fromAddress !== undefined ? { fromAddress } : {}),
           ...(partyId !== undefined ? { partyId } : {}),

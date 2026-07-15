@@ -1,11 +1,19 @@
 import type { DocketDb } from "../db.js";
-import type { DuplicateRef, Embedder, SearchFilter, SearchHit } from "../types.js";
+import type {
+  DuplicateRef,
+  Embedder,
+  SearchFilter,
+  SearchHit,
+  ThreadContextEntry,
+} from "../types.js";
 
 const CANDIDATE_LIMIT = 50;
 const RRF_K = 60;
 const MS_PER_DAY = 86_400_000;
 const SHINGLE_SIZE = 5;
 const DUP_JACCARD = 0.9;
+const EXPAND_NEIGHBORS = 2;
+const EXPAND_TEXT_CAP = 1200;
 
 interface CompiledFilter {
   /** starts with " AND " when non-empty, appended after the query condition */
@@ -279,10 +287,83 @@ function collapseDuplicates(scored: ScoredCandidate[]): ScoredCandidate[] {
   return out;
 }
 
+interface ThreadMessageRow {
+  message_id: string;
+  sent_at: string | null;
+  from_address: string;
+}
+
+/**
+ * Thread-context expansion (spec 3.6): when expand: "thread" was requested,
+ * each hit carries the surrounding new-fragment text of its thread, up to
+ * EXPAND_NEIGHBORS messages each side of the hit's message ordered by
+ * (sent_at, message_id) (the getThread ordering), the hit's own message
+ * excluded, each entry's text capped at EXPAND_TEXT_CAP chars after joining
+ * its 'new' fragments. Runs AFTER dedupe and the top-k cut: expansion is
+ * display context and never affects ranking. One thread query per DISTINCT
+ * thread among the hits; entries are cached per message so hits sharing a
+ * thread never re-query.
+ */
+function expandThreadContext(dbh: DocketDb, hits: SearchHit[]): SearchHit[] {
+  const threadIds = new Set<string>();
+  for (const h of hits) if (h.threadId !== undefined) threadIds.add(h.threadId);
+  if (threadIds.size === 0) return hits;
+
+  const msgStmt = dbh.db.prepare(
+    "SELECT message_id, sent_at, from_address FROM messages" +
+      " WHERE thread_id = ? ORDER BY sent_at, message_id",
+  );
+  const fragStmt = dbh.db.prepare(
+    "SELECT text FROM fragments WHERE message_id = ? AND kind = 'new'" +
+      " ORDER BY span_start",
+  );
+  const threads = new Map<string, ThreadMessageRow[]>();
+  for (const tid of threadIds) {
+    threads.set(tid, msgStmt.all(tid) as ThreadMessageRow[]);
+  }
+
+  const entryCache = new Map<string, ThreadContextEntry>();
+  const entryFor = (m: ThreadMessageRow): ThreadContextEntry => {
+    const cached = entryCache.get(m.message_id);
+    if (cached) return cached;
+    const newText = (fragStmt.all(m.message_id) as Array<{ text: string }>)
+      .map((f) => f.text)
+      .join("\n")
+      .slice(0, EXPAND_TEXT_CAP);
+    const entry: ThreadContextEntry = {
+      messageId: m.message_id,
+      sentAt: m.sent_at,
+      fromAddress: m.from_address,
+      newText,
+    };
+    entryCache.set(m.message_id, entry);
+    return entry;
+  };
+
+  return hits.map((h) => {
+    if (h.threadId === undefined || h.messageId === undefined) return h;
+    const msgs = threads.get(h.threadId) ?? [];
+    const idx = msgs.findIndex((m) => m.message_id === h.messageId);
+    if (idx < 0) return h;
+    const neighbors = [
+      ...msgs.slice(Math.max(0, idx - EXPAND_NEIGHBORS), idx),
+      ...msgs.slice(idx + 1, idx + 1 + EXPAND_NEIGHBORS),
+    ];
+    if (neighbors.length === 0) return h;
+    return { ...h, threadContext: neighbors.map(entryFor) };
+  });
+}
+
 export async function hybridSearch(
   dbh: DocketDb,
   embedder: Embedder | undefined,
-  q: { query: string; k?: number; filter?: SearchFilter; dedupe?: boolean },
+  q: {
+    query: string;
+    k?: number;
+    filter?: SearchFilter;
+    dedupe?: boolean;
+    expand?: "thread" | "none";
+  },
 ): Promise<SearchHit[]> {
   const k = q.k ?? 10;
   const filter = compileFilter(q.filter);
@@ -387,7 +468,7 @@ export async function hybridSearch(
   // dedupe before the top-k cut so folded copies free slots (default on)
   const finalists = q.dedupe === false ? scored : collapseDuplicates(scored);
 
-  return finalists.slice(0, k).map((s) => ({
+  const hits: SearchHit[] = finalists.slice(0, k).map((s) => ({
     chunkId: s.row.chunk_id,
     score: s.score,
     text: s.row.text,
@@ -398,4 +479,7 @@ export async function hybridSearch(
     features: s.features,
     ...(s.duplicates !== undefined ? { duplicates: s.duplicates } : {}),
   }));
+
+  // after the top-k cut: expansion is display context, never a ranking input
+  return q.expand === "thread" ? expandThreadContext(dbh, hits) : hits;
 }
