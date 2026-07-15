@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 2.1 attachment parsers + PDF text (claimed 2026-07-15)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
