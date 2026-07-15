@@ -68,7 +68,12 @@ export class SqliteTools implements Tools {
     return this.dbx.db.prepare(sql).all(...params) as Array<Record<string, unknown>>;
   }
 
-  hybridSearch(q: { query: string; k?: number; filter?: SearchFilter }): Promise<SearchHit[]> {
+  hybridSearch(q: {
+    query: string;
+    k?: number;
+    filter?: SearchFilter;
+    dedupe?: boolean;
+  }): Promise<SearchHit[]> {
     return this.indexer.hybridSearch(q);
   }
 

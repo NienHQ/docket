@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 2.4 near-duplicate suppression (claimed 2026-07-15)
+(nothing claimed)
 
 ## Blocked (credentials, see docs/RELEASING.md)
 
@@ -16,6 +16,15 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+
+## 2026-07-15 - task 2.4 done: near-duplicate suppression
+
+- Post-rerank, pre-cut dedupe stage (default on, dedupe: false opts
+  out): 5-token shingle Jaccard >= 0.9 or exact normalized equality
+  clusters candidates via deterministic union-find; primary = earliest
+  message (provenance points at the original), inherits cluster max
+  score; folded copies in SearchHit.duplicates; collapsing frees top-k
+  slots. Exposed through tools and MCP. Suite: 111 tests + 1 skip.
 
 ## 2026-07-15 - task 2.3 done: LLM contextualizer with cache
 

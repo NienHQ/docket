@@ -42,7 +42,8 @@ export async function startServer(dir: string, opts: ServerOptions = {}): Promis
     {
       description:
         "Search the mail archive (BM25 + optional vectors, reranked). " +
-        "Returns chunks with citation ids resolvable via docket_get_source.",
+        "Returns chunks with citation ids resolvable via docket_get_source. " +
+        "Near-identical copies fold into a 'duplicates' list unless dedupe is false.",
       inputSchema: {
         query: z.string(),
         k: z.number().int().min(1).max(50).optional(),
@@ -53,12 +54,17 @@ export async function startServer(dir: string, opts: ServerOptions = {}): Promis
         before: z.string().optional(),
         sourceKind: z.enum(["message", "attachment"]).optional(),
         mime: z.string().optional(),
+        dedupe: z
+          .boolean()
+          .optional()
+          .describe("collapse near-identical results (default true)"),
       },
     },
-    async ({ query, k, fromAddress, partyId, threadId, after, before, sourceKind, mime }) => {
+    async ({ query, k, fromAddress, partyId, threadId, after, before, sourceKind, mime, dedupe }) => {
       const hits = await dk.tools.hybridSearch({
         query,
         ...(k !== undefined ? { k } : {}),
+        ...(dedupe !== undefined ? { dedupe } : {}),
         filter: {
           ...(fromAddress !== undefined ? { fromAddress } : {}),
           ...(partyId !== undefined ? { partyId } : {}),

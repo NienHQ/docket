@@ -135,6 +135,12 @@ export interface SearchFilter {
   mime?: string; // prefix match on the source blob's mime type
 }
 
+export interface DuplicateRef {
+  chunkId: ChunkId;
+  messageId?: MessageId | undefined;
+  sentAt?: string | undefined;
+}
+
 export interface SearchHit {
   chunkId: ChunkId;
   score: number;
@@ -144,6 +150,12 @@ export interface SearchHit {
   threadId?: ThreadId | undefined;
   sentAt?: string | undefined;
   features: Record<string, number>;
+  /**
+   * Near-identical candidates folded into this hit (quoted-reply copies,
+   * shared attachments): the primary is the earliest message's chunk.
+   * Present only when dedupe ran and found duplicates.
+   */
+  duplicates?: DuplicateRef[];
 }
 
 export interface Indexer {
@@ -154,6 +166,8 @@ export interface Indexer {
     query: string;
     k?: number;
     filter?: SearchFilter;
+    /** collapse near-identical candidates (default true) */
+    dedupe?: boolean;
   }): Promise<SearchHit[]>;
 }
 
@@ -265,6 +279,8 @@ export interface Tools {
     query: string;
     k?: number;
     filter?: SearchFilter;
+    /** collapse near-identical candidates (default true) */
+    dedupe?: boolean;
   }): Promise<SearchHit[]>;
   getThread(threadId: ThreadId): ThreadView | null;
   getEntityTimeline(

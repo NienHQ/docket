@@ -236,6 +236,7 @@ export class SqliteIndexer implements Indexer {
     query: string;
     k?: number;
     filter?: SearchFilter;
+    dedupe?: boolean;
   }): Promise<SearchHit[]> {
     return hybridSearch(this.dbh, this.embedder, q);
   }

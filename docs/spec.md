@@ -145,6 +145,13 @@ attachment in the CAS, upsert `messages` + `message_recipients` +
 - Filters are first-class: party, address, date range, thread, source kind
   (message vs attachment), mime prefix. Filtering happens in SQL before
   ranking, not after.
+- **Near-duplicate suppression** (on by default, `dedupe: false` opts out):
+  after reranking, candidates whose normalized text is near-identical
+  (shingle Jaccard) collapse into one hit. The primary is the EARLIEST
+  message's chunk (provenance points at the original assertion, not a quoted
+  copy); it inherits the cluster's best score, and the folded copies are
+  listed in `duplicates`. Deterministic: same corpus, same query, same
+  clusters.
 
 ### 3.4 Fact ledger (`src/ledger/`)
 

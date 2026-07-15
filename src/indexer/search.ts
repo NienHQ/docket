@@ -1,9 +1,11 @@
 import type { DocketDb } from "../db.js";
-import type { Embedder, SearchFilter, SearchHit } from "../types.js";
+import type { DuplicateRef, Embedder, SearchFilter, SearchHit } from "../types.js";
 
 const CANDIDATE_LIMIT = 50;
 const RRF_K = 60;
 const MS_PER_DAY = 86_400_000;
+const SHINGLE_SIZE = 5;
+const DUP_JACCARD = 0.9;
 
 interface CompiledFilter {
   /** starts with " AND " when non-empty, appended after the query condition */
@@ -148,10 +150,139 @@ interface CandidateRow {
 
 const FEATURE_NAMES = ["rrf", "overlap", "recency", "threadCoherence"] as const;
 
+interface ScoredCandidate {
+  row: CandidateRow;
+  features: Record<string, number>;
+  score: number;
+  duplicates?: DuplicateRef[];
+}
+
+/** lowercase, non-alphanumerics to single spaces, collapsed and trimmed */
+function normalizeForDedupe(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/**
+ * Token shingles over the normalized text. Texts shorter than the shingle
+ * size get one shingle of the whole normalized text, so tiny chunks only
+ * cluster on exact normalized equality.
+ */
+function shingleSet(norm: string): Set<string> {
+  const out = new Set<string>();
+  if (norm.length === 0) return out;
+  const toks = norm.split(" ");
+  if (toks.length < SHINGLE_SIZE) {
+    out.add(norm);
+    return out;
+  }
+  for (let i = 0; i + SHINGLE_SIZE <= toks.length; i++) {
+    out.add(toks.slice(i, i + SHINGLE_SIZE).join(" "));
+  }
+  return out;
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 || b.size === 0) return 0;
+  const [small, large] = a.size <= b.size ? [a, b] : [b, a];
+  let inter = 0;
+  for (const s of small) if (large.has(s)) inter++;
+  return inter / (a.size + b.size - inter);
+}
+
+/** earliest sent_at first, nulls last, ties by chunk_id ascending */
+function byEarliest(a: CandidateRow, b: CandidateRow): number {
+  if (a.sent_at !== b.sent_at) {
+    if (a.sent_at === null) return 1;
+    if (b.sent_at === null) return -1;
+    return a.sent_at < b.sent_at ? -1 : 1;
+  }
+  return a.chunk_id < b.chunk_id ? -1 : a.chunk_id > b.chunk_id ? 1 : 0;
+}
+
+/**
+ * Near-duplicate suppression (spec 3.3): quoted-reply copies and shared
+ * attachments put near-identical text in many chunks. Candidates whose
+ * normalized texts are exactly equal or whose shingle Jaccard is >= 0.9
+ * cluster together; the primary is the EARLIEST message's chunk (provenance
+ * points at the original assertion), it inherits the cluster's best score so
+ * collapsing never demotes a result, and the folded copies are listed in
+ * `duplicates` ordered by sent_at then chunk id. Runs on the full reranked
+ * candidate list before the top-k cut, so folded copies free slots for
+ * distinct results. Fully deterministic: pairwise union-find over the sorted
+ * candidates, smaller root index wins.
+ */
+function collapseDuplicates(scored: ScoredCandidate[]): ScoredCandidate[] {
+  const n = scored.length;
+  const norms = scored.map((s) => normalizeForDedupe(s.row.text));
+  const sets = norms.map(shingleSet);
+
+  const parent = Array.from({ length: n }, (_, i) => i);
+  const find = (i: number): number => {
+    let r = i;
+    while (parent[r] !== r) r = parent[r]!;
+    while (parent[i] !== r) {
+      const next = parent[i]!;
+      parent[i] = r;
+      i = next;
+    }
+    return r;
+  };
+  const union = (a: number, b: number): void => {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra === rb) return;
+    if (ra < rb) parent[rb] = ra;
+    else parent[ra] = rb;
+  };
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (norms[i] === norms[j] || jaccard(sets[i]!, sets[j]!) >= DUP_JACCARD) {
+        union(i, j);
+      }
+    }
+  }
+
+  const clusters = new Map<number, number[]>();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    const members = clusters.get(root);
+    if (members) members.push(i);
+    else clusters.set(root, [i]);
+  }
+
+  const out: ScoredCandidate[] = [];
+  for (const members of clusters.values()) {
+    if (members.length === 1) {
+      out.push(scored[members[0]!]!);
+      continue;
+    }
+    const ordered = [...members].sort((x, y) =>
+      byEarliest(scored[x]!.row, scored[y]!.row),
+    );
+    const primary = scored[ordered[0]!]!;
+    let best = primary.score;
+    for (const m of members) if (scored[m]!.score > best) best = scored[m]!.score;
+    const duplicates: DuplicateRef[] = ordered.slice(1).map((m) => {
+      const r = scored[m]!.row;
+      return {
+        chunkId: r.chunk_id,
+        ...(r.message_id !== null ? { messageId: r.message_id } : {}),
+        ...(r.sent_at !== null ? { sentAt: r.sent_at } : {}),
+      };
+    });
+    out.push({ ...primary, score: best, duplicates });
+  }
+  out.sort((a, b) =>
+    b.score !== a.score ? b.score - a.score : a.row.chunk_id < b.row.chunk_id ? -1 : 1,
+  );
+  return out;
+}
+
 export async function hybridSearch(
   dbh: DocketDb,
   embedder: Embedder | undefined,
-  q: { query: string; k?: number; filter?: SearchFilter },
+  q: { query: string; k?: number; filter?: SearchFilter; dedupe?: boolean },
 ): Promise<SearchHit[]> {
   const k = q.k ?? 10;
   const filter = compileFilter(q.filter);
@@ -202,7 +333,7 @@ export async function hybridSearch(
     }
   }
 
-  const scored = rows.map((r) => {
+  const scored: ScoredCandidate[] = rows.map((r) => {
     const docTokens = new Set(tokenize(r.context + " " + r.text));
     let hitCount = 0;
     for (const t of queryTokens) if (docTokens.has(t)) hitCount++;
@@ -253,7 +384,10 @@ export async function hybridSearch(
     b.score !== a.score ? b.score - a.score : a.row.chunk_id < b.row.chunk_id ? -1 : 1,
   );
 
-  return scored.slice(0, k).map((s) => ({
+  // dedupe before the top-k cut so folded copies free slots (default on)
+  const finalists = q.dedupe === false ? scored : collapseDuplicates(scored);
+
+  return finalists.slice(0, k).map((s) => ({
     chunkId: s.row.chunk_id,
     score: s.score,
     text: s.row.text,
@@ -262,5 +396,6 @@ export async function hybridSearch(
     threadId: s.row.thread_id ?? undefined,
     sentAt: s.row.sent_at ?? undefined,
     features: s.features,
+    ...(s.duplicates !== undefined ? { duplicates: s.duplicates } : {}),
   }));
 }
