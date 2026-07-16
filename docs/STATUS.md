@@ -10,12 +10,6 @@ convention at the bottom of the plan).
 
 ## Blocked
 
-- 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
-  scope on the local gh token. Unblock with: gh auth refresh -h github.com
-  -s workflow (interactive). Workflow YAML is otherwise ready to write.
-- 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
-  Everything else is done and proven by pnpm verify:pack; publish is
-  npm publish --access public per docs/RELEASING.md.
 - 3.3 bench ablations: needs the PaperTrail-Bench B1 evaluation harness
   (github.com/NienHQ/papertrail-bench), which does not exist yet. When
   B1 lands: write the Docket adapter, run the internal baseline matrix
@@ -24,6 +18,18 @@ convention at the bottom of the plan).
   launch artifact.
 
 Every other task in plan.md M1 through M3 is done (see below).
+
+## 2026-07-16 - task 1.1 done: CI pipeline (workflow scope granted)
+
+- .github/workflows/ci.yml: typecheck/test/build on Node 20/22/24 x
+  ubuntu/macos, dash-scan job failing on any em/en dash, gating ci-ok
+  summary job. Branch protection on main requires ci-ok (admins exempt
+  so direct pushes keep working). Badge in README. First run green.
+- perf.yml: weekly 15k-message perf harness run (plan 1.3 leftover).
+- 1.7 publish DECIDED AGAINST (2026-07-16): no npm registry publishing.
+  package.json is private: true; distribution is git checkout +
+  pnpm pack (verify:pack proves it). RELEASING.md keeps the runbook for
+  a future reversal.
 
 ## 2026-07-16 - task 3.2 done: entity resolution v2
 
