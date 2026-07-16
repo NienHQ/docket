@@ -1,6 +1,7 @@
 {
   "name": "@nienhq/docket",
   "version": "0.1.0",
+  "private": true,
   "description": "Embeddable, local-first retrieval and memory engine for business correspondence. Immutable evidence store, JWZ threading, hybrid search, bi-temporal fact ledger. SQLite-first, no cloud dependency.",
   "type": "module",
   "license": "MIT",

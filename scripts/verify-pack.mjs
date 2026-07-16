@@ -21,6 +21,7 @@ const EXPECTED_READONLY_TOOLS = [
   "docket_get_entity_timeline",
   "docket_fact_as_of",
   "docket_fact_history",
+  "docket_suggest_parties",
 ];
 
 const tempDirs = [];
@@ -263,7 +264,7 @@ console.log("smoke-ok " + hits[0].chunkId);
     return out.trim();
   });
 
-  await step("installed docket-mcp bin: initialize + tools/list (7 tools)", async () => {
+  await step("installed docket-mcp bin: initialize + tools/list", async () => {
     const binPath = path.join(scratch, "node_modules", ".bin", "docket-mcp");
     assert(existsSync(binPath), "npm did not create node_modules/.bin/docket-mcp");
     const tools = await mcpSmoke(binPath, dataDir);

@@ -1,5 +1,7 @@
 # Docket
 
+[![ci](https://github.com/NienHQ/docket/actions/workflows/ci.yml/badge.svg)](https://github.com/NienHQ/docket/actions/workflows/ci.yml)
+
 An embeddable, local-first retrieval and memory engine for business
 correspondence. Ingest years of email and attachments, then let agents query
 them with provable provenance: every answer traces to frozen source bytes.
@@ -12,12 +14,7 @@ in-process. No Docker sidecar, no cloud, no server.
 
 ## Install
 
-```sh
-pnpm add @nienhq/docket    # or: npm install @nienhq/docket
-```
-
-Not yet on npm: the first release is pending. Installing from a git
-checkout works today:
+Docket is not published to a registry; install it from a git checkout:
 
 ```sh
 git clone https://github.com/NienHQ/docket && cd docket
@@ -25,6 +22,9 @@ pnpm install && pnpm build && pnpm pack
 # then, in your project:
 pnpm add /path/to/docket/nienhq-docket-0.1.0.tgz
 ```
+
+`pnpm verify:pack` proves the tarball end to end (contents audit,
+scratch-project install, library smoke, MCP bin over stdio).
 
 Requires Node >= 20. better-sqlite3 is a native dependency; prebuilt
 binaries cover common platforms, otherwise a C++ toolchain is needed.
@@ -34,7 +34,7 @@ binaries cover common platforms, otherwise a C++ toolchain is needed.
 Engines in this space (RAGFlow, R2R) are Python services you deploy next to
 your app. If your app is TypeScript and your data is one company's mail
 archive, that is a heavy dependency for what is fundamentally a library
-problem. Docket is `pnpm add @nienhq/docket` and a directory on disk.
+problem. Docket is one library install and a directory on disk.
 
 The design encodes what the retrieval literature actually supports:
 

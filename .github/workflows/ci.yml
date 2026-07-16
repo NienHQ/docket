@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [20, 22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  dash-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: forbid em and en dashes in repo content
+        run: |
+          set -e
+          hits=$(grep -rlP '[\x{2013}\x{2014}]' \
+            --include='*.ts' --include='*.md' --include='*.mjs' --include='*.json' --include='*.yml' \
+            src docs scripts .github README.md CHANGELOG.md package.json 2>/dev/null || true)
+          tsts=$(find tests -maxdepth 1 -name '*.ts' -print0 | xargs -0 grep -lP '[\x{2013}\x{2014}]' 2>/dev/null || true)
+          if [ -n "$hits$tsts" ]; then
+            echo "em/en dash found in:"; echo "$hits"; echo "$tsts"; exit 1
+          fi
+          echo clean
+
+  ci-ok:
+    needs: [test, dash-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok

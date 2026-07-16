@@ -1,5 +1,11 @@
 # Releasing @nienhq/docket
 
+**Decision (2026-07-16): no npm publishing for now.** package.json carries
+`"private": true` as the guard; distribution is git checkout + `pnpm pack`
+(proven by `pnpm verify:pack`). Everything below is kept as the runbook for
+if and when that decision is reversed: remove `"private": true` and follow
+it.
+
 Runbook for publishing to npm. Publishing is deliberate and manual: no
 script in this repo creates tags or publishes on its own.
 
