@@ -8,7 +8,7 @@ convention at the bottom of the plan).
 
 (nothing claimed)
 
-## Blocked (credentials, see docs/RELEASING.md)
+## Blocked
 
 - 1.1 CI pipeline: pushing .github/workflows requires the workflow OAuth
   scope on the local gh token. Unblock with: gh auth refresh -h github.com
@@ -16,6 +16,14 @@ convention at the bottom of the plan).
 - 1.7 publish step only: needs npm login and the nienhq org/scope on npm.
   Everything else is done and proven by pnpm verify:pack; publish is
   npm publish --access public per docs/RELEASING.md.
+- 3.3 bench ablations: needs the PaperTrail-Bench B1 evaluation harness
+  (github.com/NienHQ/papertrail-bench), which does not exist yet. When
+  B1 lands: write the Docket adapter, run the internal baseline matrix
+  (FTS-only / vector / hybrid / +rerank / +contextual prefixes /
+  +ledger), commit docs/ablations.md. This table is the engine's public
+  launch artifact.
+
+Every other task in plan.md M1 through M3 is done (see below).
 
 ## 2026-07-16 - task 3.2 done: entity resolution v2
 
