@@ -6,7 +6,7 @@ convention at the bottom of the plan).
 
 ## In progress
 
-(nothing claimed)
+- 3.3 bench ablations (claimed 2026-07-18; harness landed, protocol tagged harness-protocol-v1)
 
 ## Blocked
 
