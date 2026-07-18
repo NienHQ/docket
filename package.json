@@ -61,6 +61,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify:pack": "node scripts/verify-pack.mjs",
+    "ablations": "node scripts/run-ablations.mjs",
     "release": "node scripts/verify-pack.mjs && npm version minor --no-git-tag-version && node -e \"const v = require('./package.json').version; console.log('version bumped to ' + v + '. next steps (manual, see docs/RELEASING.md):'); console.log('  git commit -am v' + v); console.log('  git tag v' + v); console.log('  git push --follow-tags'); console.log('  npm publish --access public');\""
   },
   "dependencies": {

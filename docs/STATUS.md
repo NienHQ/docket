@@ -6,18 +6,25 @@ convention at the bottom of the plan).
 
 ## In progress
 
-- 3.3 bench ablations (claimed 2026-07-18; harness landed, protocol tagged harness-protocol-v1)
+(nothing claimed)
 
-## Blocked
+PLAN COMPLETE: every task in plan.md M1 through M3 is done (see below).
+Refresh docs/ablations.md when the bench gains categories 4 to 7 and
+realism screws (its G milestone): current corpora saturate accuracy.
 
-- 3.3 bench ablations: needs the PaperTrail-Bench B1 evaluation harness
-  (github.com/NienHQ/papertrail-bench), which does not exist yet. When
-  B1 lands: write the Docket adapter, run the internal baseline matrix
-  (FTS-only / vector / hybrid / +rerank / +contextual prefixes /
-  +ledger), commit docs/ablations.md. This table is the engine's public
-  launch artifact.
+## 2026-07-18 - task 3.3 done: bench ablations (MILESTONE 3 COMPLETE)
 
-Every other task in plan.md M1 through M3 is done (see below).
+- scripts/bench-adapter.mjs speaks papertrail-protocol v1 (bench tag
+  harness-protocol-v1) through the public API only; four ablation axes
+  via env (embedder, contextual prefixes, fact ledger, dedupe).
+- scripts/run-ablations.mjs runs the 5-config x 2-corpus matrix through
+  the bench runner; docs/ablations.md holds the tables + repro commands.
+- Findings: accuracy saturates at 100 for every config on current
+  corpora (no headroom in categories 1 to 3; bench G milestone will
+  change that). The separation is citations: 100 precision vs bm25's
+  85 to 88, recall 100/94.9 vs 74.5/81.6, because answers pin to frozen
+  source chunks. Ledger route matches fallback accuracy while answering
+  category 3 from validated facts. Suite: 137 tests + 2 skips.
 
 ## 2026-07-16 - task 1.1 done: CI pipeline (workflow scope granted)
 
